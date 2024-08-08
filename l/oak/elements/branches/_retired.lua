@@ -1,0 +1,122 @@
+
+-- NOTE: this is a very outdated drawing function that was optimized at the time.
+-- local function draw(root, cr)
+--
+--     local something_was_drawn = true -- TODO: use this properly
+--
+--     -- if no element needs to be relayouted or redrawn, just return
+--     if root.nr_of_elements_that_need_relayout == 0
+--         and root.nr_of_elements_that_need_redraw == 0
+--     then return false end
+--
+--     -- TODO: make sure not to return tables here. Just store them in the root. 
+--     -- This should massively optimize everything since these tables would 
+--     -- not need to be gc'd.
+--     local
+--         least_elements_to_relayout,
+--         all_elements_to_relayout,
+--         elements_to_redraw
+--             = toe_internal.element_get_children_to_relayout_and_redraw(root)
+--
+--     -- TODO: rewrite the draw function to make it start out with a "nil"
+--     -- clip region, that gets progressively larger as the regions get marked
+--     -- for redraw.
+--     -- ALSO: write a "draw_debug" function
+--     -- local something_needs_to_be_drawn = elements_to_redraw[1] ~= nil
+--     local dirty_region = lgi.cairo.Region.create() -- TODO: replace lgi
+--
+--     -- mark all regions of the redraw elements as dirty BEFORE relayouting
+--
+--     print('redraw elements that need clipping before relayout:')
+--     for _, element in ipairs(elements_to_redraw) do
+--         -- TODO: check for oak_geometry == nil
+--         -- t_i_unveil.dump(element.oak_geometry)
+--         print("element to redraw", element)
+--         local elem_geom = element:get_geometry()
+--         if elem_geom.x ~= nil then
+--             dirty_region:union_rectangle(
+--                 lgi.cairo.RectangleInt(
+--                     toe_internal.geometry_to_clip_area(element.geometry)
+--                 )
+--             )
+--         end
+--     end
+--
+--     -- relayout all elements that it makes sense to relayout
+--     for _, element in ipairs(least_elements_to_relayout) do
+--         print("element to relayout", element)
+--         local geom = element:get_geometry()
+--         toe_internal.element_recursively_process(
+--             element,
+--             geom.x,
+--             geom.y,
+--             geom.width,
+--             geom.height
+--         )
+--     end
+--
+--     -- was something relayouted?
+--     if #least_elements_to_relayout > 0 then
+--         -- if something was relayouted, mark all regions of the redraw 
+--         -- elements as dirty AFTER RELAYOUTING AGAIN, because their geometry 
+--         -- might have changed
+--
+--         print('redraw elements that need clipping after relayout:')
+--         for _, element in ipairs(elements_to_redraw) do
+--             t_i_unveil.dump(element.geometry)
+--             dirty_region:union_rectangle(
+--                 lgi.cairo.RectangleInt(
+--                     toe_internal.geometry_to_clip_area(element.geometry)
+--                 )
+--             )
+--         end
+--     end
+--
+--     -- reset the clip so we can draw anywhere on the window
+--     cr:reset_clip()
+--
+--     -- clip the whole region marked
+--     for i=0, dirty_region:num_rectangles() - 1 do
+--         local rect = dirty_region:get_rectangle(i)
+--         print('CLIPPING THE FOLLOWING RECTS:')
+--         print("rect: ", rect.x, rect.y, rect.width, rect.height)
+--         cr:rectangle(rect.x, rect.y, rect.width, rect.height)
+--     end
+--     cr:clip()
+--
+--     -- draw the background first, so we don't get "solitaire trails" from 
+--     -- previous drawings if the background is transparent
+--     cr:save() -- save because we don't want to use this operator for everything.
+--     -- We use the CLEAR operator to make sure that all previous data
+--     -- that used to exist in memory where our surface now exists gets cleared.
+--     -- Otherwise we can get random artifacts and trash in our drawing.
+--     -- This will also automatically draw transparency if a compositor
+--     -- is running.
+--     cr:set_operator(lgi.cairo.Operator.CLEAR)
+--     cr:paint()
+--     cr:restore()
+--
+--     -- draw the whole tree onto the pixmap. We clipped to the dirty region 
+--     -- earlier, which should ensure that only that portion is redrawn.
+--     toe_internal.element_recursively_draw_on_context(root, cr)
+--
+--     -- cr:rectangle(100, 100, 40, 40)
+--     -- cr:set_source_rgb(0.1, 0.9, 0.1)
+--     -- cr:fill()
+--
+--     -- reset the marked changes so that changes dont persist across frames
+--     for _, element in ipairs(all_elements_to_relayout) do
+--         element._oak_private.needs_relayout = false
+--     end
+--     for _, element in ipairs(elements_to_redraw) do
+--         element._oak_private.needs_redraw = false
+--     end
+--     root.nr_of_elements_that_need_relayout = 0
+--     root.nr_of_elements_that_need_redraw = 0
+--
+--     print("DRAWING DONE IN OAK ROOT")
+--
+--     return something_was_drawn
+-- end
+
+
