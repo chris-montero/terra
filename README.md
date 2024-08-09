@@ -11,7 +11,8 @@ Terra aims to make developing cross platform applications an experience that is 
 
 ## Current state
 **Warning: Terra is still very early in development. We push to the main branch and live life day to day.**  
-Terra currently only works with luajit on linux under Xorg. Support for Wayland, Windows and Mac is planned.
+Terra currently only works with luajit on linux under Xorg. Support for Wayland, Windows and Mac is planned.  
+If you experience any issues with installing, bugs, etc., you can open an issue or contact me directly.
 
 ## Example
 This code creates an application, creates a window, creates a UI tree with Oak, terra's built-in UI library, paints a green background, creates a red ball, draws "hello world" on it, and animates the ball to spin in a circle.
