@@ -101,7 +101,8 @@ The above code produces the following output (without the titlebar):
 * My mom, for sponsoring this project. Thanks mom.
 
 # Contributing
-You are welcome to contribute by opening issues, comitting code, or through donations. Any support is sincerely appreciated.
+You are welcome to contribute by opening issues, comitting code, or through donations.  
+Any support is sincerely appreciated.
 
 https://ko-fi.com/chrismontero
 
