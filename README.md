@@ -10,7 +10,7 @@ Terra aims to make developing cross platform applications an experience that is 
 <p align="center"><img src="https://github.com/chris-montero/terra/blob/master/showcase/mathgraph.png?raw=true" alt="Mathgraph app image"></p>
 
 ## Current state
-** Warning: Terra is still very early in development. We push to the main branch and live life day to day.**  
+**Warning: Terra is still very early in development. We push to the main branch and live life day to day.**  
 Terra currently only works with luajit on linux under Xorg. Support for Wayland, Windows and Mac is planned.
 
 ## Example
