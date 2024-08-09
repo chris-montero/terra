@@ -1,4 +1,4 @@
-# Description
+# Terra
 *What if you didn't have to write electron apps anymore?*
 
 Terra offers a platform-independent, featureful toolkit that allows you to easily and quickly build your application, and then flexibly go as low-level as you need to optimize your application.  
