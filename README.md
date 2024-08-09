@@ -57,7 +57,7 @@ local function init_app(app)
                         source = tt_color.rgb(0.8, 0.1, 0), -- red
                         border_radius = 30,
                     }),
-                    -- declaratively subscribe to signals on elements (very powerful feature)
+                    -- declaratively subscribe to signals on elements
                     subscribe_on_root = { 
                         ["AnimationEvent"] = function(self, time)
                             local spin_push = 20
