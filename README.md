@@ -65,10 +65,10 @@ local function init_app(app)
                             self:set_offset_y(-math.cos(time) * spin_push)
                         end
                     },
-                    toel_text.new({ -- the "hello" text
+                    toel_text.new({ -- "hello world" text
                         family = "Roboto",
                         size = 11,
-                        width = 40, -- constrain the textbox so the text wraps
+                        width = 40, -- constrain the width so the text wraps
                         halign = to_align.CENTER,
                         valign = to_align.CENTER,
                         text = "hello world",
@@ -86,7 +86,7 @@ t_app.desktop(init_app, t_app.make_default_event_handler(function(app, event_typ
 end))
 ```
 
-The above code produces the following output:
+The above code produces the following output (without the titlebar):
 <p align="center"><img src="https://github.com/chris-montero/terra/blob/master/showcase/green_background_red_ball.png?raw=true" alt="green background red ball image"></p>
 
 ## Installing
@@ -97,7 +97,7 @@ The above code produces the following output:
 3. That's it. Now you should be able to successfully run the code in the [Example](#Example) section.
 
 # Credits
-* [Uli Schlachter](https://github.com/psychon), for promptly and elaborately answering my questions on about Xorg on stack overflow.
+* [Uli Schlachter](https://github.com/psychon), for promptly and elaborately answering my questions about Xorg on stack overflow.
 * My mom, for sponsoring this project. Thanks mom.
 
 # Contributing
