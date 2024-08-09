@@ -101,7 +101,7 @@ The above code produces the following output:
 * My mom, for sponsoring this project. Thanks mom.
 
 # Contributing
-You are welcome to contribute by opening issues, comitting code, or donations.
+You are welcome to contribute by opening issues, comitting code, or through donations.
 
 https://ko-fi.com/chrismontero
 
