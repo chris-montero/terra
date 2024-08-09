@@ -93,5 +93,7 @@ The above code produces the following output:
 # Contributing
 You are welcome to contribute by opening issues, comitting code, or donations.
 
+https://ko-fi.com/chrismontero
+
 US DOLLAR IBAN: `RO75BTRLUSDCRT0323524101`  
 EURO IBAN: `RO71BTRLEURCRT0323524101`
