@@ -1,5 +1,5 @@
 # Description
-What if you didn't have to write electron apps anymore?  
+*What if you didn't have to write electron apps anymore?*  
 Terra offers a platform-independent, featureful toolkit that allows you to easily and quickly build your application, and then flexibly go as low-level as you need to optimize your application.  
 This toolkit was built based on my experience with [AwesomeWM](https://github.com/awesomeWM/awesome), [Elm](https://elm-lang.org/), and [Elm-ui](https://github.com/mdgriffith/elm-ui), and other projects. I hope you find it useful.
 <p align="center"><img src="https://github.com/chris-montero/terra/blob/master/showcase/whether.png?raw=true" alt="Whether weather app image"></p>
