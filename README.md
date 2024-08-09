@@ -89,6 +89,13 @@ end))
 The above code produces the following output:
 <p align="center"><img src="https://github.com/chris-montero/terra/blob/master/showcase/green_background_red_ball.png?raw=true" alt="green background red ball image"></p>
 
+## Installing
+1. Clone the repo
+`git clone https://github.com/chris-montero/terra`
+2. Build the project and install the luarock
+`sudo luarocks make`
+3. That's it. Now you should be able to successfully run the code in the [Example](#Example) section.
+
 # Credits
 * [Uli Schlachter](https://github.com/psychon), for promptly and elaborately answering my questions on about Xorg on stack overflow.
 * My mom, for sponsoring this project. Thanks mom.
