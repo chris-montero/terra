@@ -13,7 +13,6 @@ dependencies = {
     "lua ~> 5.1",
     "lgi ~> 0.9.2-1",
     "tstation ~> dev-1",
-    "stdcolor ~> dev-1",
 }
 build = {
     type = "builtin",
@@ -76,6 +75,7 @@ build = {
         ["terra.tools.table"] = "l/tools/table.lua",
         ["terra.tools.tracker"] = "l/tools/tracker.lua",
         ["terra.tools.shapers"] = "l/tools/shapers.lua",
+        ["terra.tools.color"] = "l/tools/color.lua",
 
         -- terra internals
         -- TODO: remove this from the release build
