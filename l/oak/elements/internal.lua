@@ -2,7 +2,6 @@
 local lgi = require("lgi")
 
 local tstation = require("tstation")
-local stdcolor = require("stdcolor")
 
 local tt_tracker = require("terra.tools.tracker")
 

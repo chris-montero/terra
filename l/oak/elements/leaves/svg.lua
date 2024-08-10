@@ -1,7 +1,7 @@
 
 local lgi = require("lgi")
-local stdcolor = require("stdcolor")
 
+local tt_color = require("terra.tools.color")
 local tt_table = require("terra.tools.table")
 
 local to_source = require("terra.oak.source")
@@ -47,7 +47,7 @@ local function oak_draw(self, cr, width, height)
 
     local dim = self._handle:get_dimensions()
     local scale_w, scale_h = width / dim.width, height / dim.height
-    local src = self.source or stdcolor.rgb(0, 0, 0)
+    local src = self.source or tt_color.rgb(0, 0, 0)
 
     cr:scale(scale_w, scale_h)
     cr:push_group_with_content(lgi.cairo.Content.ALPHA)

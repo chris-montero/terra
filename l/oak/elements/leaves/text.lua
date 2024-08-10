@@ -1,8 +1,7 @@
 
 local lgi = require("lgi")
 
-local stdcolor = require("stdcolor")
-
+local tt_color = require("terra.tools.color")
 local tt_table = require("terra.tools.table")
 
 local to_source = require("terra.oak.source")
@@ -48,7 +47,7 @@ local function oak_draw(self, cr, avail_w, avail_h)
     end
 
     -- if self.id ~= nil then
-    --     cr:set_source(to_source.to_cairo_source(stdcolor.rgba(0, 1, 0, 0.3)))
+    --     cr:set_source(to_source.to_cairo_source(tt_color.rgba(0, 1, 0, 0.3)))
     --     cr:rectangle(0, 0, log.width, log.height)
     --     cr:fill()
     -- end
@@ -95,7 +94,7 @@ local function oak_draw(self, cr, avail_w, avail_h)
             cr:restore()
         end
     -- else
-    --     cr:set_source(to_source.to_cairo_source(stdcolor.rgba(0, 1, 0, 0.3)))
+    --     cr:set_source(to_source.to_cairo_source(tt_color.rgba(0, 1, 0, 0.3)))
     --     cr:rectangle(0, 0, avail_w, avail_h)
     --     cr:fill()
     end
@@ -188,7 +187,7 @@ local function new(args)
     local defaults = {
 
         bg = nil,
-        fg = stdcolor.rgb_from_string("#000000"),
+        fg = tt_color.rgb_from_string("#000000"),
         letter_spacing = 0,
         line_spacing = 0, -- TODO
         -- text_halign -- TODO
