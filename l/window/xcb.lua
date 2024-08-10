@@ -305,6 +305,11 @@ end
 local function create(app, x, y, width, height, args)
 
     local xcb_window_defaults = {
+        -- by default xcb windows should have titlebars
+        wants_titlebar = true,
+
+        draw = draw,
+
         handle_configure_notify_event = handle_configure_notify_event,
         handle_mouse_click_event = handle_mouse_click_event,
         handle_create_event = handle_create_event,
@@ -323,9 +328,6 @@ local function create(app, x, y, width, height, args)
         handle_visibility_event = handle_visibility_event,
         handle_unmap_event = handle_unmap_event,
         handle_frame_event = handle_frame_event,
-
-        -- by default xcb windows should have titlebars
-        wants_titlebar = true,
     }
     local window = tw_internal.common_new(
         app, 
@@ -363,6 +365,7 @@ return {
     request_geometry_change = request_geometry_change,
 
     set_tree = set_tree,
+    draw = draw,
 
     handle_configure_notify_event = handle_configure_notify_event,
     handle_mouse_click_event = handle_mouse_click_event,
