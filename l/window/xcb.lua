@@ -84,15 +84,16 @@ local function request_geometry_change(window, x, y, width, height)
     t_i_swin.set_geometry_request(window.window_id, x, y, width, height)
 end
 
+-- returns true if the window drew anything, false otherwise
 local function draw(window)
 
     local tree = window.tree
-    if tree == nil then return end
+    if tree == nil then return false end
 
     -- if the window is not visible, don't draw.
     if window.visibility ~= tw_internal.visibility.RAISED_AND_SHOWING then 
         print("NO NEED TO DRAW BECAUSE NOT SHOWING")
-        return
+        return false
     end
 
     -- if the geometry of the window changed since last time, we need a new 
@@ -107,7 +108,9 @@ local function draw(window)
 
     -- let the tree do its drawing
     local something_was_drawn = tree:draw(window.cr, window_geom.width, window_geom.height)
-    if something_was_drawn == false then return end
+    if something_was_drawn == false then 
+        return false
+    end
 
     -- finally, copy the drawing from the pixmap to the window
     t_i_spixmap.draw_portion_to_window(
@@ -123,7 +126,7 @@ local function draw(window)
         window.pixmap_height
     )
 
-    -- print("!!!!!!!!!!!!!!DRAWN TERRA WINDOW")
+    return true
 end
 
 -------------------
