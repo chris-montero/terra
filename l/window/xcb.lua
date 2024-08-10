@@ -151,10 +151,7 @@ local function handle_mouse_click_event(window, is_press, button, modifiers, x, 
 
     local tree = window.tree
     if tree ~= nil then 
-        local tree_geom = tree:get_geometry()
-        if x < tree_geom.width and y < tree_geom.height then 
-            tree:handle_mouse_click_event(is_press, button, modifiers, x, y)
-        end
+        tree:handle_mouse_click_event(is_press, button, modifiers, x, y)
     end
 
     if window.max_fps == nil then
@@ -192,10 +189,7 @@ local function handle_mouse_enter_event(window, button, modifiers, x, y)
 
     local tree = window.tree
     if tree ~= nil then
-        local tree_geom = tree:get_geometry()
-        if x < tree_geom.width and y < tree_geom.height then 
-            tree:handle_mouse_enter_event(button, modifiers, x, y)
-        end -- TODO: should we allow trees to specify their x y coords?
+        tree:handle_mouse_enter_event(button, modifiers, x, y)
     end
 
     if window.max_fps == nil then
@@ -227,12 +221,7 @@ local function handle_mouse_leave_event(window, button, modifiers, x, y)
 
     local tree = window.tree
     if tree ~= nil then 
-        local tree_geom = tree:get_geometry()
-
-        -- TODO: should we allow trees to specify their x y coords?
-        if x < tree_geom.width and y < tree_geom.height then 
-            tree:handle_mouse_leave_event(button, modifiers, x, y)
-        end
+        tree:handle_mouse_leave_event(button, modifiers, x, y)
     end
 
     if window.max_fps == nil then
@@ -247,12 +236,7 @@ local function handle_mouse_motion_event(window, modifiers, x, y)
 
     local tree = window.tree
     if tree ~= nil then 
-
-        -- TODO: should we allow trees to specify their x y coords?
-        local tree_geom = tree:get_geometry()
-        if x < tree_geom.width and y < tree_geom.height then 
-            tree:handle_mouse_motion_event(modifiers, x, y)
-        end
+        tree:handle_mouse_motion_event(modifiers, x, y)
     end
 
     if window.max_fps == nil then
