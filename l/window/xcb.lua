@@ -141,7 +141,7 @@ local function handle_configure_notify_event(window, x, y, width, height)
     -- NOTE: the contained tree, if any, will be notified of the change in 
     -- the `draw` function
     if window.max_fps == nil then
-        draw(window) -- if no fps limit, draw immediately
+        window:draw() -- if no fps limit, draw immediately
     end
 end
 
@@ -158,7 +158,7 @@ local function handle_mouse_click_event(window, is_press, button, modifiers, x, 
     end
 
     if window.max_fps == nil then
-        draw(window)
+        window:draw()
     end
 end
 
@@ -199,12 +199,12 @@ local function handle_mouse_enter_event(window, button, modifiers, x, y)
     end
 
     if window.max_fps == nil then
-        draw(window)
+        window:draw()
     end
 end
 
 local function handle_expose_event(window, x, y, width, height, count)
-    draw(window)
+    window:draw()
 end
 
 local function handle_focus_in_event(window)
@@ -236,7 +236,7 @@ local function handle_mouse_leave_event(window, button, modifiers, x, y)
     end
 
     if window.max_fps == nil then
-        draw(window)
+        window:draw()
     end
 end
 
@@ -256,7 +256,7 @@ local function handle_mouse_motion_event(window, modifiers, x, y)
     end
 
     if window.max_fps == nil then
-        draw(window)
+        window:draw()
     end
 end
 
@@ -285,7 +285,7 @@ local function handle_visibility_event(window, visibility)
     tstation.emit(window.station, "WindowBecameVisible")
 
     -- always draw when the window becomes visible. Otherwise it will just be blank.
-    draw(window)
+    window:draw()
 end
 
 local function handle_unmap_event(window)
@@ -294,7 +294,7 @@ local function handle_unmap_event(window)
 end
 
 local function handle_frame_event(window, time)
-    draw(window)
+    window:draw()
 end
 
 
