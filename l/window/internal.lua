@@ -92,7 +92,7 @@ local function window_common_new(app, x, y, width, height, args)
     window.scope.self = window
 
     -- always set the initial window.geometry
-    window:set_geometry(window.x, window.y, window.width, window.height)
+    window:set_geometry(x, y, width, height)
 
     -- setup the signals
     setup_signals(window, app)

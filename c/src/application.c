@@ -51,16 +51,29 @@ static void prepare_cb(EV_P_ struct ev_prepare *prep, int revents)
         // result anyway. That is why here, in a consecutive list of motion 
         // events, we only process the last one.
         event2 = xcb_poll_for_event(app.connection);
-        if (XCB_EVENT_RESPONSE_TYPE(event1) == XCB_MOTION_NOTIFY) 
-        {
-            // event1 and event2 are both MotionNotify events. 
-            // If so, continue polling for events until event2 
-            // is NOT a MotionNotify event.
-            while ((event2 != NULL) 
-                && (XCB_EVENT_RESPONSE_TYPE(event2) == XCB_MOTION_NOTIFY)) 
-            {
-                event2 = xcb_poll_for_event(app.connection);
-            }
+        switch(XCB_EVENT_RESPONSE_TYPE(event1)){
+            case XCB_MOTION_NOTIFY:
+                // event1 and event2 are both MotionNotify events. 
+                // If so, continue polling for events until event2 
+                // is NOT a MotionNotify event.
+                while (
+                    (event2 != NULL) 
+                    && (XCB_EVENT_RESPONSE_TYPE(event2) == XCB_MOTION_NOTIFY)
+                ) {
+                    free(event2);
+                    event2 = xcb_poll_for_event(app.connection);
+                }
+                break;
+            case XCB_CONFIGURE_NOTIFY:
+                // the same applies for window resizing events.
+                while (
+                    (event2 != NULL) 
+                    && (XCB_EVENT_RESPONSE_TYPE(event2) == XCB_CONFIGURE_NOTIFY)
+                ) {
+                    free(event2);
+                    event2 = xcb_poll_for_event(app.connection);
+                }
+                break;
         }
 
         event_handle(event1);

@@ -1,5 +1,6 @@
 
 local tt_table = require("terra.tools.table")
+local tt_color = require("terra.tools.color")
 
 local to_border = require("terra.oak.border")
 local to_source = require("terra.oak.source")
@@ -9,6 +10,7 @@ local toe_internal = require("terra.oak.elements.internal")
 local toe_element = require("terra.oak.elements.element")
 
 local toel_leaf = require("terra.oak.elements.leaves.leaf")
+
 
 local function draw_background(bg_elem, cr, width, height)
     local bg_source = bg_elem.source
@@ -72,7 +74,7 @@ local function draw_border(bg_elem, cr, width, height)
     end
 
     -- local border_radius = bg_elem.border_radius or 0
-    local border_source = bg_elem.border_source or stdcolor.rgb(0, 0, 0) -- black default color for border
+    local border_source = bg_elem.border_source or tt_color.rgb(0, 0, 0) -- black default color for border
     cr:push_group_with_content(lgi.cairo.Content.ALPHA)
     cr.fill_rule = lgi.cairo.FillRule.EVEN_ODD
 

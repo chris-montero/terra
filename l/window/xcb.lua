@@ -84,15 +84,16 @@ local function request_geometry_change(window, x, y, width, height)
     t_i_swin.set_geometry_request(window.window_id, x, y, width, height)
 end
 
+-- returns true if the window drew anything, false otherwise
 local function draw(window)
 
     local tree = window.tree
-    if tree == nil then return end
+    if tree == nil then return false end
 
     -- if the window is not visible, don't draw.
     if window.visibility ~= tw_internal.visibility.RAISED_AND_SHOWING then 
         print("NO NEED TO DRAW BECAUSE NOT SHOWING")
-        return
+        return false
     end
 
     -- if the geometry of the window changed since last time, we need a new 
@@ -107,7 +108,9 @@ local function draw(window)
 
     -- let the tree do its drawing
     local something_was_drawn = tree:draw(window.cr, window_geom.width, window_geom.height)
-    if something_was_drawn == false then return end
+    if something_was_drawn == false then 
+        return false
+    end
 
     -- finally, copy the drawing from the pixmap to the window
     t_i_spixmap.draw_portion_to_window(
@@ -123,7 +126,7 @@ local function draw(window)
         window.pixmap_height
     )
 
-    -- print("!!!!!!!!!!!!!!DRAWN TERRA WINDOW")
+    return true
 end
 
 -------------------
@@ -141,7 +144,7 @@ local function handle_configure_notify_event(window, x, y, width, height)
     -- NOTE: the contained tree, if any, will be notified of the change in 
     -- the `draw` function
     if window.max_fps == nil then
-        draw(window) -- if no fps limit, draw immediately
+        window:draw() -- if no fps limit, draw immediately
     end
 end
 
@@ -151,14 +154,11 @@ local function handle_mouse_click_event(window, is_press, button, modifiers, x, 
 
     local tree = window.tree
     if tree ~= nil then 
-        local tree_geom = tree:get_geometry()
-        if x < tree_geom.width and y < tree_geom.height then 
-            tree:handle_mouse_click_event(is_press, button, modifiers, x, y)
-        end
+        tree:handle_mouse_click_event(is_press, button, modifiers, x, y)
     end
 
     if window.max_fps == nil then
-        draw(window)
+        window:draw()
     end
 end
 
@@ -192,19 +192,16 @@ local function handle_mouse_enter_event(window, button, modifiers, x, y)
 
     local tree = window.tree
     if tree ~= nil then
-        local tree_geom = tree:get_geometry()
-        if x < tree_geom.width and y < tree_geom.height then 
-            tree:handle_mouse_enter_event(button, modifiers, x, y)
-        end -- TODO: should we allow trees to specify their x y coords?
+        tree:handle_mouse_enter_event(button, modifiers, x, y)
     end
 
     if window.max_fps == nil then
-        draw(window)
+        window:draw()
     end
 end
 
 local function handle_expose_event(window, x, y, width, height, count)
-    draw(window)
+    window:draw()
 end
 
 local function handle_focus_in_event(window)
@@ -227,16 +224,11 @@ local function handle_mouse_leave_event(window, button, modifiers, x, y)
 
     local tree = window.tree
     if tree ~= nil then 
-        local tree_geom = tree:get_geometry()
-
-        -- TODO: should we allow trees to specify their x y coords?
-        if x < tree_geom.width and y < tree_geom.height then 
-            tree:handle_mouse_leave_event(button, modifiers, x, y)
-        end
+        tree:handle_mouse_leave_event(button, modifiers, x, y)
     end
 
     if window.max_fps == nil then
-        draw(window)
+        window:draw()
     end
 end
 
@@ -247,16 +239,11 @@ local function handle_mouse_motion_event(window, modifiers, x, y)
 
     local tree = window.tree
     if tree ~= nil then 
-
-        -- TODO: should we allow trees to specify their x y coords?
-        local tree_geom = tree:get_geometry()
-        if x < tree_geom.width and y < tree_geom.height then 
-            tree:handle_mouse_motion_event(modifiers, x, y)
-        end
+        tree:handle_mouse_motion_event(modifiers, x, y)
     end
 
     if window.max_fps == nil then
-        draw(window)
+        window:draw()
     end
 end
 
@@ -285,7 +272,7 @@ local function handle_visibility_event(window, visibility)
     tstation.emit(window.station, "WindowBecameVisible")
 
     -- always draw when the window becomes visible. Otherwise it will just be blank.
-    draw(window)
+    window:draw()
 end
 
 local function handle_unmap_event(window)
@@ -294,7 +281,7 @@ local function handle_unmap_event(window)
 end
 
 local function handle_frame_event(window, time)
-    draw(window)
+    window:draw()
 end
 
 
@@ -305,6 +292,11 @@ end
 local function create(app, x, y, width, height, args)
 
     local xcb_window_defaults = {
+        -- by default xcb windows should have titlebars
+        wants_titlebar = true,
+
+        draw = draw,
+
         handle_configure_notify_event = handle_configure_notify_event,
         handle_mouse_click_event = handle_mouse_click_event,
         handle_create_event = handle_create_event,
@@ -323,9 +315,6 @@ local function create(app, x, y, width, height, args)
         handle_visibility_event = handle_visibility_event,
         handle_unmap_event = handle_unmap_event,
         handle_frame_event = handle_frame_event,
-
-        -- by default xcb windows should have titlebars
-        wants_titlebar = true,
     }
     local window = tw_internal.common_new(
         app, 
@@ -363,6 +352,7 @@ return {
     request_geometry_change = request_geometry_change,
 
     set_tree = set_tree,
+    draw = draw,
 
     handle_configure_notify_event = handle_configure_notify_event,
     handle_mouse_click_event = handle_mouse_click_event,

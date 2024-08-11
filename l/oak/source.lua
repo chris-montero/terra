@@ -1,6 +1,6 @@
 
 local lgi = require("lgi")
-local stdcolor = require("stdcolor")
+local tt_color = require("terra.tools.color")
 
 local SOURCE_LINEAR_GRADIENT = 3
 local SOURCE_RADIAL_GRADIENT = 4
@@ -12,7 +12,7 @@ local function _check_point(args)
 end
 
 local function stop(offset, color)
-    assert(stdcolor.is_color(color))
+    assert(tt_color.is_color(color))
 
     return {
         offset = offset,
@@ -35,7 +35,7 @@ end
 
 local function _add_color_stop(linpat, stp)
 
-    if stp.color._color_type == stdcolor.COLOR_RGB then
+    if stp.color._color_type == tt_color.COLOR_RGB then
         lgi.cairo.GradientPattern.add_color_stop_rgb(
             linpat,
             stp.offset,
@@ -43,7 +43,7 @@ local function _add_color_stop(linpat, stp)
             stp.color.g,
             stp.color.b
         )
-    elseif stp.color._color_type == stdcolor.COLOR_RGBA then
+    elseif stp.color._color_type == tt_color.COLOR_RGBA then
         lgi.cairo.GradientPattern.add_color_stop_rgba(
             linpat,
             stp.offset,
@@ -52,8 +52,8 @@ local function _add_color_stop(linpat, stp)
             stp.color.b,
             stp.color.a
         )
-    elseif stp.color._color_type == stdcolor.COLOR_HSL then
-        local conv = stdcolor.hsl_to_rgb(stp.color)
+    elseif stp.color._color_type == tt_color.COLOR_HSL then
+        local conv = tt_color.hsl_to_rgb(stp.color)
         lgi.cairo.GradientPattern.add_color_stop_rgb(
             linpat,
             stp.offset,
@@ -61,8 +61,8 @@ local function _add_color_stop(linpat, stp)
             conv.g,
             conv.b
         )
-    elseif stp.color._color_type == stdcolor.COLOR_HSLA then
-        local conv = stdcolor.hsla_to_rgba(stp.color)
+    elseif stp.color._color_type == tt_color.COLOR_HSLA then
+        local conv = tt_color.hsla_to_rgba(stp.color)
         lgi.cairo.GradientPattern.add_color_stop_rgba(
             linpat,
             stp.offset,
@@ -78,15 +78,15 @@ local function to_cairo_source(src)
 
     if src._color_type ~= nil then
 
-        if src._color_type == stdcolor.COLOR_RGB then
+        if src._color_type == tt_color.COLOR_RGB then
             return lgi.cairo.Pattern.create_rgb(src.r, src.g, src.b)
-        elseif src._color_type == stdcolor.COLOR_RGBA then
+        elseif src._color_type == tt_color.COLOR_RGBA then
             return lgi.cairo.Pattern.create_rgba(src.r, src.g, src.b, src.a)
-        elseif src._color_type == stdcolor.COLOR_HSL then
-            local conv = stdcolor.hsl_to_rgb(src)
+        elseif src._color_type == tt_color.COLOR_HSL then
+            local conv = tt_color.hsl_to_rgb(src)
             return lgi.cairo.Pattern.create_rgb(conv.r, conv.g, conv.b)
-        elseif src._color_type == stdcolor.COLOR_HSLA then
-            local conv = stdcolor.hsla_to_rgba(src)
+        elseif src._color_type == tt_color.COLOR_HSLA then
+            local conv = tt_color.hsla_to_rgba(src)
             return lgi.cairo.Pattern.create_rgba(conv.r, conv.g, conv.b, conv.a)
         end
 

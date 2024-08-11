@@ -21,7 +21,8 @@ int luaH_scairo_surface_create_from_pixmap(lua_State *L)
         height
     );
 
-    lua_pushinteger(L, (u64)cairo_surface); // This HAS to be an integer, NOT a lightuserdata
+    // push the pointer directly as a lua number. TODO: is this safe?
+    lua_pushinteger(L, (u64)cairo_surface);
     return 1;
 }
 
