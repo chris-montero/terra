@@ -1,23 +1,23 @@
 { pkgs ? import <nixpkgs> {}, recompile ? false }:
 
 pkgs.mkShell {
-  buildInputs = [
-    pkgs.luarocks
-    pkgs.luajit
-    pkgs.cairo
-    pkgs.pango # needed for lgi
-    pkgs.libev
-    pkgs.pkg-config
-    pkgs.xorg.libX11
-    pkgs.xorg.libxcb
-    pkgs.xorg.xcbutil
-    pkgs.xcb-util-cursor
-    pkgs.xorg.xcbutilerrors
-    pkgs.xorg.xcbutilkeysyms
-    pkgs.libxkbcommon
+  buildInputs = with pkgs; [
+    luarocks
+    luajit
+    cairo
+    pango # needed for lgi
+    libev
+    pkg-config
+    xorg.libX11
+    xorg.libxcb
+    xorg.xcbutil
+    xcb-util-cursor
+    xorg.xcbutilerrors
+    xorg.xcbutilkeysyms
+    libxkbcommon
 
-    pkgs.luajitPackages.lgi
-    pkgs.gobject-introspection
+    luajitPackages.lgi
+    gobject-introspection
   ];
 
   shellHook = ''
