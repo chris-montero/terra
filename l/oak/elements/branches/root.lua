@@ -13,7 +13,6 @@ local t_sigtools = require("terra.sigtools")
 local t_element = require("terra.element")
 
 local toe_internal = require("terra.oak.elements.internal")
-local toe_element = require("terra.oak.elements.element")
 
 local toeb_internal = require("terra.oak.elements.branches.internal")
 local toeb_branch = require("terra.oak.elements.branches.branch")
@@ -259,7 +258,7 @@ end
 local function handle_attach_to_window(root, window, app)
 
     root.scope.self = root
-    root.scope.root = root -- we need this in order to make `toe_element.mark_redraw` work
+    root.scope.root = root -- we need this in order to make `toe_internal.mark_redraw` work
     root.scope.window = window
     root.scope.app = app
 
@@ -299,7 +298,7 @@ local function draw(root, cr, window_width, window_height)
     if root_geom.width ~= window_width or root_geom.height ~= window_height then
         -- TODO: let the root also position itself according to properties like "valign", "halign", etc.
         root:set_geometry(0, 0, window_width, window_height)
-        toe_element.mark_redraw(root)
+        toe_internal.mark_redraw(root)
     end
 
     -- if nothing changed, just return

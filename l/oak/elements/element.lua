@@ -3,42 +3,22 @@ local tt_table = require("terra.tools.table")
 
 local t_element = require("terra.element")
 local t_sigtools = require("terra.sigtools")
-
-local function mark_redraw(element)
-    local root = element.scope.root
-    if root == nil then return end -- not attached
-    if element.oak_private.needs_redraw == true then return end -- already marked
-    element.oak_private.needs_redraw = true
-    root.nr_of_elements_that_need_redraw = root.nr_of_elements_that_need_redraw + 1
-end
-
-local function mark_dont_redraw(element)
-    local root = element.scope.root
-    if root == nil then return end -- not attached
-    if element.oak_private.needs_redraw == false then return end -- already not marked
-    element.oak_private.needs_redraw = false
-    root.nr_of_elements_that_need_redraw = root.nr_of_elements_that_need_redraw - 1
-end
-
-local function default_oak_prop_set(element, key, value)
-    rawset(element, key, value)
-    mark_redraw(element)
-end
+local toe_internal = require("terra.oak.elements.internal")
 
 local function set_offset_x(element, value)
-    default_oak_prop_set(element, "offset_x", value)
+    toe_internal.default_oak_prop_set(element, "offset_x", value)
 end
 
 local function set_offset_y(element, value)
-    default_oak_prop_set(element, "offset_y", value)
+    toe_internal.default_oak_prop_set(element, "offset_y", value)
 end
 
 local function set_oak_draw(element, value)
-    default_oak_prop_set(element, "oak_draw", value)
+    toe_internal.default_oak_prop_set(element, "oak_draw", value)
 end
 
 local function set_opacity(element, value)
-    default_oak_prop_set(element, "opacity", value)
+    toe_internal.default_oak_prop_set(element, "opacity", value)
 end
 
 local function new()
@@ -118,14 +98,8 @@ end
 
 
 return {
-    -- element tools
-    mark_redraw = mark_redraw,
-    mark_dont_redraw = mark_dont_redraw,
-
     -- constructor
     new = new,
-
-    default_oak_prop_set = default_oak_prop_set,
 
     set_offset_x = set_offset_x,
     set_offset_y = set_offset_y,
