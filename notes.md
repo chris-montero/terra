@@ -1,8 +1,11 @@
 
+# notes
 
-
-
-# TODO
-[ ] maybe have separate `set_bounding_geometry`, `set_drawing_geometry`, `get_bounding_geometry` and `get_drawing_geometry` functions, instead of just having `set_geometry` and `get_geometry`. This could be very useful in cases where you want to layer children in a <terra.oak.elements.branches.el> container, you want one of the children to be "anchored" to the relative x & y coordinates of the parent "el", you want this child to draw something, but you don't want it to take up any space in the "el" parent. In this case, you could override the `get_bounding_geometry` and make it `return x, y, 0, 0`. This way, the element would still be allowed to be anchored to the parent and draw, but would not take up any space in the layout.
-
+### Cairo optimization idea
+as far as I know, cairo works in the way that: you draw something, then, if some part of the drawing changes, you mark that portion as "dirty", you draw your whole drawing again, and now cairo is going to take care to only draw in that specific portion that you marked. It's essentially an optimized painter's algorithm. 
+The problem with this is with a scenario like the following: let's say you have two things you want to draw: a red circle in the middle of the screen, and then a blue rectangle that takes up the whole size of the screen. Then, you want to move the circle around. How would you update your drawing?
+* In the most unoptimized scenario, you would just start the whole drawing all over again: draw the circle, draw the rectangle, and now your drawing is updated.
+* In a slightly more optimized scenario, you would be able to mark as dirty the region of the screen where the circle previously WAS, and the region of the screen where the circle currently IS. Then, draw your whole drawing again, and the graphics library that you're using should only draw in the portions of the screen that you marked as dirty. This is what cairo does.
+* In the most optimized scenario, you would realize that since the rectangle takes up the whole size of the screen, there's no reason to even bother with the circle, so you DRAW NOTHING. How would you be able to optimize your graphics library to identify a scenario like this and correctly figure out which portions of the screen to update? I think you could do it this way:
+Instead of having a "linear" algorithm for drawing where you give your drawing library a list of commands to perform (as cairo does), you instead give it a tree of shapes and configurations. The graphics library stores one thing: the tree of the current drawing, and, if you want to have a new drawing, you create a new tree, give it that, and the graphics library should take care of figuring out what changed, and only drawing the portions of the screen that changed. This way you don't even need cairo's usual "clip" functionality to mark out portions of the screen that changed. Then, the graphics library starts comparing the trees from the TOP-MOST element down. If the trees are identical, the screen is not updated at all. In this way, the library would perfectly optimize away the aforementioned scenario by noticing that there's a big blue rectangle obstructing the whole screen. Therefore, in spite of the fact that the circle's x, y coordinates changed, draw nothing.
 

@@ -56,32 +56,13 @@ local function _window_drawing_context_setup(window, width, height)
     window.cairo_surf_ptr = cairo_surf_ptr
     window.lgi_cairo_surf = lgi_cairo_surf
     window.cr = cr
-
-    -- and set the new pixmap sizes; TODO: this shouldn't be exposed on the lua side.
-    window.pixmap_width = width
-    window.pixmap_height = height 
 end
 
-
-
--- TODO: there should be a way for the user to know if his request was granted/denied
-local function request_raise(window)
-    t_i_swin.map_request(window.scope.app.terra_data, window.window_id)
-end
-
-local function hide(window)
-    t_i_swin.unmap(window.scope.app.terra_data, window.window_id)
-end
-
-local function destroy(window)
-    t_i_swin.destroy(window.window_id)
-end
-
-local function request_geometry_change(window, x, y, width, height)
-    local window_geom = window:get_geometry()
-    if window_geom.x == x and window_geom.y == y and window_geom.width == width and window_geom.height == height then return end
-
-    t_i_swin.set_geometry_request(window.window_id, x, y, width, height)
+local function _window_drawing_context_update(window, width, height)
+    local terra_data = window.scope.app.terra_data
+    t_i_spixmap.destroy(terra_data, window.pixmap_id)
+    window.pixmap_id = t_i_spixmap.create(terra_data, width, height)
+    t_i_scairo.set_pixmap(window.cairo_surf_ptr, window.pixmap_id, width, height)
 end
 
 -- returns true if the window drew anything, false otherwise
@@ -96,14 +77,22 @@ local function draw(window)
         return false
     end
 
+    local window_geom = window:get_geometry()
+
     -- if the geometry of the window changed since last time, we need a new 
     -- context for drawing.
-    local window_geom = window:get_geometry()
-    if window_geom.width ~= window.pixmap_width 
-        or window_geom.height ~= window.pixmap_height 
+    if window.width ~= window_geom.width or window.height ~= window_geom.height then
+        _window_drawing_context_update(window, window.width, window.height)
+    end
+
+    -- if the window geometry changed since last frame, update it
+    if
+        window.x ~= window_geom.x
+        or window.y ~= window_geom.y
+        or window.width ~= window_geom.width
+        or window.height ~= window_geom.height
     then
-        _window_drawing_context_destroy(window)
-        _window_drawing_context_setup(window, window_geom.width, window_geom.height)
+        window:set_geometry(window.x, window.y, window.width, window.height)
     end
 
     -- let the tree do its drawing
@@ -122,8 +111,8 @@ local function draw(window)
         -- numbers from here.
         0,
         0,
-        window.pixmap_width,
-        window.pixmap_height
+        window_geom.width,
+        window_geom.height
     )
 
     return true
@@ -136,7 +125,10 @@ end
 -- this gets called when the geometry of a window changes
 local function handle_configure_notify_event(window, x, y, width, height)
 
-    window:set_geometry(x, y, width, height)
+    window.x = x
+    window.y = y
+    window.width = width
+    window.height = height
 
     -- TODO: make it so that in a list of configure notify events, only the 
     -- last one is processed. (from the C side)
@@ -342,6 +334,31 @@ local function create(app, x, y, width, height, args)
     return window
 end
 
+-- TODO: there should be a way for the user to know if his request was granted/denied
+local function request_raise(window)
+    t_i_swin.map_request(window.scope.app.terra_data, window.window_id)
+end
+local function request_geometry_change(window, x, y, width, height)
+    local window_geom = window:get_geometry()
+    if window_geom.x == x 
+        and window_geom.y == y 
+        and window_geom.width == width 
+        and window_geom.height == height 
+    then 
+        return 
+    end
+
+    t_i_swin.set_geometry_request(window.window_id, x, y, width, height)
+end
+
+local function hide(window)
+    t_i_swin.unmap(window.scope.app.terra_data, window.window_id)
+end
+
+local function destroy(window)
+    _window_drawing_context_destroy(window)
+    t_i_swin.destroy(window.window_id)
+end
 
 return {
     create = create,
@@ -351,7 +368,7 @@ return {
     request_raise = request_raise,
     request_geometry_change = request_geometry_change,
 
-    set_tree = set_tree,
+    set_tree = tw_internal.set_tree,
     draw = draw,
 
     handle_configure_notify_event = handle_configure_notify_event,

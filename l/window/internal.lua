@@ -15,21 +15,45 @@ local visibility = {
     RAISED_AND_SHOWING = 2,
 }
 
--- TODO: make this work with a metatable after the window is created.
-local function set_tree(window, tree)
-    if tree == nil then
-        if window.tree ~= nil then
-            -- TODO: handle the case where another tree is already attached. detach, teardown signals, etc.
+local function set_tree(window, new_tree)
+
+    if window.tree == tree then return end -- nothing changed
+
+    local old_tree = window.tree
+    if old_tree == nil then
+        if tree == nil then -- nothing to do
+            return
+        else -- old tree is nil, set new tree
+            window.tree = tree
+            tree:handle_attach_to_window(window, window.scope.app)
         end
     else
-        if window.tree ~= nil then
-            -- TODO: handle the case where another tree is already attached. detach, teardown signals, etc.
+        -- remove the old tree
+        old_tree:handle_detach_from_window(window, window.scope.app)
+        if tree == nil then
+            window.tree = nil
+        else -- set the new tree
+            tree:handle_attach_to_window(window, window.scope.app)
+            window.tree = tree
         end
-        window.tree = tree 
-
-        -- finally, let the tree know it was attached to a window
-        tree:handle_attach_to_window(window, window.scope.app)
     end
+
+    -- if tree == nil then
+    --     if window.tree == nil then
+    --         return
+    --     else
+    --         window.tree = nil
+    --         tree:handle_detach_from_window(window, window.scope.app)
+    --     end
+    -- else
+    --     if window.tree ~= nil then
+    --         tree:handle_detach_from_window(window, window.scope.app)
+    --     end
+    --
+    --     window.tree = tree 
+    --     -- finally, let the tree know it was attached to a window
+    --     tree:handle_attach_to_window(window, window.scope.app)
+    -- end
 end
 
 local function setup_signals(window, parent_app)
@@ -58,12 +82,6 @@ local function window_common_new(app, x, y, width, height, args)
     local window_defaults = {
 
         -- model = model -- NOTE: the user provides a model if he wants
-
-        -- the interface to be an oak branch
-        -- oak_geometrize_children = root_geometrize_children,
-        -- oak_get_children = root_get_children,
-        -- oak_set_geometry = ou_internal.element_terra_set_geometry_default,
-        -- branch = args.branch
 
         -- tree = nil, -- to be set by the user
 
@@ -99,21 +117,11 @@ local function window_common_new(app, x, y, width, height, args)
 
     -- set the tree if there is one.
     if window.tree ~= nil then
-        set_tree(window, window.tree)
+        window.tree:handle_attach_to_window(window, window.scope.app)
     end
 
     -- TODO: maybe add functionality to allow users to move a window from one 
     -- <terra.app> to another? If so, we need to handle signals properly.
-
-    -- t_i_unveil.dump(window, {
-    --     ignore_fields = {
-    --         window = true,
-    --         parent = true,
-    --         model = true,
-    --     }
-    -- })
-
-    -- t_i_root_tools.root_setup(root, window_x, window_y, window_width, window_height)
 
     return window
 end

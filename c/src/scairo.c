@@ -26,6 +26,18 @@ int luaH_scairo_surface_create_from_pixmap(lua_State *L)
     return 1;
 }
 
+int luaH_scairo_surface_set_pixmap(lua_State *L)
+{
+    cairo_surface_t *cairo_surface = (cairo_surface_t *) lua_tointeger(L, 1);
+    xcb_pixmap_t pixmap_id = (xcb_pixmap_t)lhelp_check_id(L, 2);
+    u16 width = luaL_checkinteger(L, 3);
+    u16 height = luaL_checkinteger(L, 4);
+
+    cairo_xcb_surface_set_drawable(cairo_surface, pixmap_id, width, height);
+
+    return 0;
+}
+
 int luaH_scairo_surface_destroy(lua_State *L)
 {
     cairo_surface_t *cairo_surface = (cairo_surface_t *) lua_tointeger(L, 1);
@@ -36,6 +48,7 @@ int luaH_scairo_surface_destroy(lua_State *L)
 
 static const struct luaL_Reg lib_scairo[] = {
     { "create_from_pixmap", luaH_scairo_surface_create_from_pixmap },
+    { "set_pixmap", luaH_scairo_surface_set_pixmap },
     { "destroy", luaH_scairo_surface_destroy },
     { NULL, NULL }
 };

@@ -13,9 +13,9 @@ local t_sigtools = require("terra.sigtools")
 local t_element = require("terra.element")
 
 local toe_internal = require("terra.oak.elements.internal")
-local toe_element = require("terra.oak.elements.element")
 
 local toeb_internal = require("terra.oak.elements.branches.internal")
+local toeb_branch = require("terra.oak.elements.branches.branch")
 local toeb_el = require("terra.oak.elements.branches.el")
 
 -- TODO: document what interface a table must satisfy in order to be a proper <terra.root>
@@ -104,7 +104,6 @@ local function handle_mouse_enter_event(root, button, modifiers, x, y)
     --
     --     tstation.emit(elem.station, button, modifiers, x, y)
     -- end
-
 
     tt_tracker.reset(root.oak_private.tracker_last)
     tt_tracker.reset(root.oak_private.tracker_now)
@@ -229,6 +228,7 @@ local function handle_mouse_motion_event(root, modifiers, x, y)
         end
     end
 
+    -- finally, emit the mouse motion event
     for _, elem in ipairs(hit_elements) do
         local elem_geom = elem:get_geometry()
         tstation.emit(elem.station, 
@@ -241,22 +241,6 @@ local function handle_mouse_motion_event(root, modifiers, x, y)
         )
     end
 
-    -- for _, elem in ipairs(hit_children) do
-    --     if root.oak_private.elements_under_mouse_last_mapping[elem.oak_private.id] ~= elem then 
-    --     end
-    -- end
-    --
-    -- for _, child in ipairs(hit_children) do
-    --     local geom = child:get_geometry()
-    --     tstation.emit(child.station, 
-    --         t_element.events.MouseMotionEvent, -- event type
-    --         -- translate the coordinates so the child gets relative coordinates
-    --         -- TODO: test this
-    --         modifiers,
-    --         math.floor(x - geom.x),
-    --         math.floor(y - geom.y)
-    --     )
-    -- end
 end
 
 local function setup_signals(root, parent_window, parent_app)
@@ -274,15 +258,14 @@ end
 local function handle_attach_to_window(root, window, app)
 
     root.scope.self = root
-    root.scope.root = root -- we need this in order to make `toeb_internal.element_mark_relayout` work
+    root.scope.root = root -- we need this in order to make `toe_internal.mark_redraw` work
     root.scope.window = window
     root.scope.app = app
 
     setup_signals(root, window, app)
 
-    -- TODO: setup metatables in this function
-
-    for _, child in ipairs(root:oak_get_children()) do
+    for _, child in root:oak_children_iter() do
+        print(root, child)
         -- TODO: implement this properly for all children
         child:oak_handle_attach_to_parent_element(root, root, window, app) -- parent, root, window, app
     end
@@ -291,14 +274,13 @@ end
 local function handle_detach_from_window(root, window, app)
 
     root.scope.self = nil
+    root.scope.root = nil
     root.scope.window = nil
     root.scope.app = nil
 
     teardown_signals(root, window, app)
 
-    -- TODO: remove metatables in this function
-
-    for _, child in ipairs(root:oak_get_children()) do
+    for _, child in root:oak_children_iter() do
         -- TODO: implement this properly for all children
         child:oak_handle_detach_from_parent_element(root, root, window, app) -- parent, root, window, app
     end
@@ -316,7 +298,7 @@ local function draw(root, cr, window_width, window_height)
     if root_geom.width ~= window_width or root_geom.height ~= window_height then
         -- TODO: let the root also position itself according to properties like "valign", "halign", etc.
         root:set_geometry(0, 0, window_width, window_height)
-        toe_element.mark_redraw(root)
+        toe_internal.mark_redraw(root)
     end
 
     -- if nothing changed, just return
@@ -336,6 +318,7 @@ local function draw(root, cr, window_width, window_height)
 
     -- reset the clip so we can draw anywhere on the window
     cr:reset_clip()
+    -- TODO: clip to only draw within root bounds
 
     -- draw the background first, so we don't get "solitaire trails" from 
     -- previous drawings if the background is transparent
@@ -357,18 +340,38 @@ local function draw(root, cr, window_width, window_height)
     return true -- something was redrawn
 end
 
--- TODO: make this work with iterators
-local function root_oak_get_children(root)
-    return root
+local function root_oak_geometrize_children(root, width, height)
+    -- root can NOT have a shadow
+    if root.bg == nil and #root == 0 then return nil end
+
+    -- TODO: turn this into a single function that sets the geometries 
+    -- of its children directly
+    return toeb_el.position_children(
+        toeb_el.dimensionate_children(root, width, height)
+    )
 end
 
-local function root_oak_geometrize_children(root, width, height)
+local function root_oak_children_iter(root)
+    -- root can only have a bg and numerical indexed children
 
-    if #root < 1 then return nil end -- no children to geometrize
+    local co = coroutine.create(function()
+        if root.bg ~= nil then
+            coroutine.yield("bg", root.bg)
+        end
 
-    return toeb_el.position_children(
-        toeb_el.dimensionate_children(root:oak_get_children(), width, height)
-    )
+        for i=1, #root do
+            coroutine.yield(i, root[i])
+        end
+    end)
+
+    return function ()
+        local is_not_finished, key, val = coroutine.resume(co)
+        if is_not_finished then
+            return key, val
+        else
+            return nil, nil
+        end
+    end
 end
 
 local function new(args)
@@ -377,12 +380,15 @@ local function new(args)
 -- * 
 
     local root_defaults = {
-        -- used for redraw
+        -- used for redraw -- TODO: move this in oak_private
         nr_of_elements_that_need_redraw = 0,
 
         oak_private = {
             -- use an empty function for ID. TODO: check if this is efficient
             id = function() end,
+
+            -- necessary for branches, which the root is
+            child_id_to_index = {}, 
 
             -- used for knowing each frame if we should draw at all.
             -- Saves up CPU time when nothing is happening.
@@ -412,7 +418,7 @@ local function new(args)
 
         -- the interface to be an oak branch
         oak_geometrize_children = root_oak_geometrize_children,
-        oak_get_children = root_oak_get_children,
+        oak_children_iter = root_oak_children_iter,
 
         -- TODO: make it so that these fields dont HAVE to be set, but instead
         -- the user can choose which ones to define
@@ -429,7 +435,10 @@ local function new(args)
         set_oak_draw = set_oak_draw,
         set_opacity = set_opacity,
 
-        set_child = set_child,
+        set_bg = toeb_branch.set_bg,
+        set_child_n = toeb_branch.set_child_n,
+        insert_child_n = toeb_branch.insert_child_n,
+        remove_child_n = toeb_branch.remove_child_n,
         set_valign = set_valign,
         set_halign = set_halign,
     }
@@ -444,6 +453,9 @@ return {
     setup_signals = setup_signals,
     teardown_signals = teardown_signals,
 
+    oak_geometrize_children = root_oak_geometrize_children,
+    oak_children_iter = root_oak_children_iter,
+
     handle_attach_to_window = handle_attach_to_window,
     handle_detach_from_window = handle_detach_from_window,
     handle_parent_window_destroy_event = handle_parent_window_destroy_event,
@@ -451,5 +463,6 @@ return {
     handle_mouse_enter_event = handle_mouse_enter_event,
     handle_mouse_leave_event = handle_mouse_leave_event,
     handle_mouse_motion_event = handle_mouse_motion_event,
+
 }
 
