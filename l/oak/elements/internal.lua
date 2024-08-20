@@ -135,8 +135,8 @@ local function element_recursively_draw_on_context(element, cr)
     end
     cr:translate(-element_x, -element_y)
 
-    if element.oak_get_children ~= nil then
-        for _, child in ipairs(element:oak_get_children()) do
+    if element.oak_children_iter ~= nil then
+        for _, child in element:oak_children_iter() do
             element_recursively_draw_on_context(child, cr)
         end
     end
@@ -179,8 +179,8 @@ local function element_recursively_get_elements_under_point(element, point_x, po
         if t_element.contains_point(elem, x, y) then
             table.insert(acc, elem)
         end
-        if elem.oak_get_children ~= nil then
-            for _, child in ipairs(elem:oak_get_children()) do
+        if elem.oak_children_iter ~= nil then -- not a branch
+            for _, child in elem:oak_children_iter() do
                 _dig(acc, child, x, y)
             end
         end

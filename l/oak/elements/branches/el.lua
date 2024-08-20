@@ -13,11 +13,10 @@ local toe_internal = require("terra.oak.elements.internal")
 local toeb_internal = require("terra.oak.elements.branches.internal")
 local toeb_branch = require("terra.oak.elements.branches.branch")
 
+local function el_calculate_minimum_dimensions(el, constraint_w, constraint_h)
 
-local function el_calculate_minimum_dimensions(branch, constraint_w, constraint_h)
-
-    local el_bw = to_border.get_width(branch)
-    local standardized_padding = to_padding.standardize(branch.padding or 0)
+    local el_bw = to_border.get_width(el)
+    local standardized_padding = to_padding.standardize(el.padding or 0)
 
     local min_w = standardized_padding.left + standardized_padding.right + (el_bw * 2)
     local min_h = standardized_padding.top + standardized_padding.bottom + (el_bw * 2)
@@ -27,7 +26,7 @@ local function el_calculate_minimum_dimensions(branch, constraint_w, constraint_
 
     -- NOTE: only go through the children in the array portion of the table because
     -- we don't want the shadow or the bg to take up horizontal space
-    for _, child in ipairs(branch) do
+    for _, child in ipairs(el) do
 
         local child_bw = to_border.get_width(child)
         local child_standardized_padding = to_padding.standardize(child.padding or 0)
@@ -79,9 +78,9 @@ local function el_calculate_minimum_dimensions(branch, constraint_w, constraint_
 end
 
 
-local function _dimensionate_single_child_el(branch, child, avail_w, avail_h)
+local function _dimensionate_single_child_el(el, child, avail_w, avail_h)
 
-    local padd = branch.padding or 0
+    local padd = el.padding or 0
     local standardized_padding = to_padding.standardize(padd)
     local padding_top = standardized_padding.top
     local padding_right = standardized_padding.right
@@ -148,26 +147,26 @@ local function _dimensionate_single_child_el(branch, child, avail_w, avail_h)
     }
 end
 
-local function el_dimensionate_children(branch, avail_w, avail_h)
+local function el_dimensionate_children(el, avail_w, avail_h)
 
     local dimensionated_children_data = {
         available_width = avail_w,
         available_height = avail_h,
-        standardized_padding = to_padding.standardize(branch.padding or 0),
-        parent_border_width = to_border.get_width(branch)
+        standardized_padding = to_padding.standardize(el.padding or 0),
+        parent_border_width = to_border.get_width(el)
     }
 
     do
-        local shadow = branch.shadow
-        local bg = branch.bg
+        local shadow = el.shadow
+        local bg = el.bg
         if shadow ~= nil then dimensionated_children_data.shadow = shadow end
         if bg ~= nil then dimensionated_children_data.bg = bg end
     end
 
-    for _, child in ipairs(branch) do
+    for _, child in ipairs(el) do
         table.insert(
             dimensionated_children_data,
-            _dimensionate_single_child_el(branch, child, avail_w, avail_h)
+            _dimensionate_single_child_el(el, child, avail_w, avail_h)
         )
     end
 
@@ -245,15 +244,16 @@ local function el_position_children(dimensionated_children_data)
     return positioned_children_data
 end
 
-local function el_geometrize_children(branch, avail_w, avail_h)
+-- TODO: make this function set the geometries of its subchildren directly
+local function el_oak_geometrize_children(el, avail_w, avail_h)
 
-    -- NOTE: this will return nil if this branch has no shadow, no bg,
+    -- NOTE: this will return nil if this el has no shadow, no bg,
     -- and no sub-children
-    if #branch:oak_get_children() == 0 then return nil end
+    if el.bg == nil and el.shadow == nil and #el == 0 then return nil end
 
     -- TODO: merge these two functions into one
     return el_position_children(
-        el_dimensionate_children(branch, avail_w, avail_h)
+        el_dimensionate_children(el, avail_w, avail_h)
     )
 end
 
@@ -275,7 +275,7 @@ return {
     dimensionate_children = el_dimensionate_children,
     position_children = el_position_children,
 
-    oak_geometrize_children = oak_el_geometrize_children,
+    oak_geometrize_children = el_oak_geometrize_children,
     oak_calculate_minimum_dimensions = oak_el_calculate_minimum_dimensions,
 }
 

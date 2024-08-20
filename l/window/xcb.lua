@@ -368,7 +368,7 @@ return {
     request_raise = request_raise,
     request_geometry_change = request_geometry_change,
 
-    set_tree = set_tree,
+    set_tree = tw_internal.set_tree,
     draw = draw,
 
     handle_configure_notify_event = handle_configure_notify_event,

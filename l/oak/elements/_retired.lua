@@ -62,14 +62,9 @@ local function mark_dont_redraw(element)
 end
 
 -- local function element_mark_redraw_all_subchildren(element)
---     -- TODO: make the "get_children" method actually be an iterator instead 
---     -- of a method that returns a table so that I can avoid some of the 
---     -- mumbo jumbo below. (and hopefully it will also be faster)
 --     element_mark_redraw(element)
---     if element.oak_get_children == nil then return end -- not a branch
---     local children = element:oak_get_children()
---     if children == nil then return end -- no children
---     for _, c in ipairs(children) do
+--     if element.oak_children_iter == nil then return end -- not a branch
+--     for _, c in element:oak_children_iter() do
 --         element_mark_redraw_all_subchildren(c)
 --     end
 -- end
@@ -83,9 +78,8 @@ end
 --
 --     local function dig(storage, current_element)
 --
---         if current_element.oak_get_children == nil then return end
---         local children = current_element:oak_get_children()
---         for _, c in ipairs(children) do
+--         if current_element.oak_children_iter == nil then return end -- not a branch
+--         for _, c in current_element:oak_children_iter() do
 --
 --             if element_needs_relayout(c) then
 --                 table.insert(storage, c)
@@ -108,9 +102,8 @@ end
 --
 --     local function dig(storage, current_element)
 --
---         if current_element.oak_get_children == nil then return end
---         local children = current_element:oak_get_children()
---         for _, c in ipairs(children) do
+--         if current_element.oak_children_iter == nil then return end -- not a branch
+--         for _, c in current_element:oak_children_iter() do
 --             if element_needs_redraw(c) then
 --                 table.insert(storage, c)
 --                 dig(storage, c)
@@ -152,9 +145,8 @@ local function element_get_children_to_relayout_and_redraw(element)
             end
         end
 
-        if current.oak_get_children == nil then return end
-        local children = current:oak_get_children()
-        for _, c in ipairs(children) do
+        if current.oak_children_iter == nil then return end
+        for _, c in current:oak_children_iter() do
             dig(
                 c,
                 least_relayout_storage,

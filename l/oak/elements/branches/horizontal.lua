@@ -679,9 +679,9 @@ end
 -- TODO: turn this into a single function
 local function horizontal_geometrize_children(branch, avail_w, avail_h)
 
-    -- NOTE: this will return nil if this branch has no shadow, no bg,
-    -- and no sub-children
-    if #branch:oak_get_children() == 0 then return nil end
+    -- TODO: make each branch geometrize its own children directly,
+    -- including setting the geometries of its direct sub-children
+    if branch.bg == nil and branch.shadow == nil and #branch == 0 then return nil end
 
     return horizontal_position_children(
         horizontal_dimensionate_children(branch, avail_w, avail_h)

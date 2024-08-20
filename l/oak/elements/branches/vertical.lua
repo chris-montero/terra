@@ -13,23 +13,23 @@ local toe_element = require("terra.oak.elements.element")
 local toeb_branch = require("terra.oak.elements.branches.branch")
 local toeb_internal = require("terra.oak.elements.branches.internal")
 
-local function vertical_calculate_minimum_dimensions(branch, constraint_w, constraint_h)
+local function vertical_calculate_minimum_dimensions(vertical, constraint_w, constraint_h)
 
-    local spacing = branch.spacing or 0
-    local standardized_padding = to_padding.standardize(branch.padding or 0)
-    local el_bw = to_border.get_width(branch)
+    local spacing = vertical.spacing or 0
+    local standardized_padding = to_padding.standardize(vertical.padding or 0)
+    local el_bw = to_border.get_width(vertical)
 
     local acc_h =
         standardized_padding.top +
         standardized_padding.bottom +
-        toeb_internal.get_spacing_between_children(#branch, spacing)
+        toeb_internal.get_spacing_between_children(#vertical, spacing)
         + (el_bw * 2)
     local min_w = standardized_padding.left + standardized_padding.right + (el_bw * 2)
     local max_w = 0
 
     -- NOTE: only go through the children in the array portion of the table because
     -- we don't want the shadow or the bg to take up horizontal space
-    for _, child in ipairs(branch) do
+    for _, child in ipairs(vertical) do
 
         local child_border_width = to_border.get_width(child)
         local child_standardized_padding = to_padding.standardize(child.padding or 0)
@@ -76,18 +76,18 @@ local function vertical_calculate_minimum_dimensions(branch, constraint_w, const
     return min_w + max_w, acc_h
 end
 
-local function vertical_dimensionate_children(branch, avail_w, avail_h)
+local function vertical_dimensionate_children(vertical, avail_w, avail_h)
 
-    local spacing = branch.spacing or 0
+    local spacing = vertical.spacing or 0
 
     -- account for padding and spacing
-    local total_spacing = toeb_internal.get_spacing_between_children(#branch, spacing)
-    local standardized_padding = to_padding.standardize(branch.padding or 0)
+    local total_spacing = toeb_internal.get_spacing_between_children(#vertical, spacing)
+    local standardized_padding = to_padding.standardize(vertical.padding or 0)
     local padding_top = standardized_padding.top
     local padding_right = standardized_padding.right
     local padding_bottom = standardized_padding.bottom
     local padding_left = standardized_padding.left
-    local parent_bw = to_border.get_width(branch)
+    local parent_bw = to_border.get_width(vertical)
 
     local dimensionated_children_data = {
         available_width = avail_w,
@@ -98,14 +98,14 @@ local function vertical_dimensionate_children(branch, avail_w, avail_h)
     }
 
     do
-        local shadow = branch.shadow
-        local bg = branch.bg
+        local shadow = vertical.shadow
+        local bg = vertical.bg
         if shadow ~= nil then dimensionated_children_data.shadow = shadow end
         if bg ~= nil then dimensionated_children_data.bg = bg end
     end
 
-    -- NOTE: use ipairs(branch) so we dont layout vertically bg and shadow
-    for k, child in ipairs(branch) do
+    -- NOTE: use ipairs(vertical) so we dont layout vertically bg and shadow
+    for k, child in ipairs(vertical) do
         dimensionated_children_data[k] = {
             halign = child.halign or to_align.LEFT,
             offset_x = child.offset_x or 0,
@@ -134,8 +134,8 @@ local function vertical_dimensionate_children(branch, avail_w, avail_h)
     -- widgets we also get the raw height information of children to use later
     -- note: in order to optimise this later, we store the elements in contiguous
     -- arrays, but we also keep track of the initial index of the element
-    -- NOTE: use ipairs(branch) so we dont layout horizontally bg and shadow
-    for k, child in ipairs(branch) do
+    -- NOTE: use ipairs(vertical) so we dont layout horizontally bg and shadow
+    for k, child in ipairs(vertical) do
         local raw_child_h = child.height
         if type(raw_child_h) == "number" then
             table.insert(number_height_children, {k, child})
@@ -178,7 +178,7 @@ local function vertical_dimensionate_children(branch, avail_w, avail_h)
         + fill_height_children_total_border_width
 
     -- process height for children that already have it explicitly specified
-    -- NOTE: use ipairs(branch) so we dont layout horizontally bg and shadow
+    -- NOTE: use ipairs(vertical) so we dont layout horizontally bg and shadow
     for _, child_data in ipairs(number_height_children) do
         local original_child_i = child_data[1]
         local child = child_data[2]
@@ -236,8 +236,8 @@ local function vertical_dimensionate_children(branch, avail_w, avail_h)
     -- all children. also, we need to do this afterwards because only now we 
     -- know the constraint_height to give to children that have width-shrink
 
-    -- NOTE: use ipairs(branch) so we dont layout bg and shadow
-    for k, child in ipairs(branch) do
+    -- NOTE: use ipairs(vertical) so we dont layout bg and shadow
+    for k, child in ipairs(vertical) do
         local real_child_w = 0
         local child_bw = to_border.get_width(child)
         if type(child.width) == "number" then
@@ -667,14 +667,14 @@ local function vertical_position_children(dimensionated_children_data)
     return positioned_children_data
 end
 
-local function vertical_geometrize_children(branch, avail_w, avail_h)
+local function vertical_geometrize_children(vertical, avail_w, avail_h)
 
     -- NOTE: this will return nil if this branch has no shadow, no bg,
     -- and no sub-children
-    if #branch:oak_get_children() == 0 then return nil end
+    if vertical.bg == nil and vertical.shadow == nil and #vertical == 0 then return nil end
 
     return vertical_position_children(
-        vertical_dimensionate_children(branch, avail_w, avail_h)
+        vertical_dimensionate_children(vertical, avail_w, avail_h)
     )
 end
 
