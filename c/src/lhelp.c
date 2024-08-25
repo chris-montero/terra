@@ -4,7 +4,6 @@
 
 #include "lhelp.h"
 
-#include "util.h"
 #include "sane.h"
 
 // from luajit source code. Copyright Mike Pall. (probably copy pasted from lua5.2 lol)

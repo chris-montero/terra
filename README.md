@@ -5,7 +5,7 @@ Terra offers a platform-independent, featureful toolkit that allows you to easil
 This toolkit was built based on my experience with [AwesomeWM](https://github.com/awesomeWM/awesome), [Elm](https://elm-lang.org/), and [Elm-ui](https://github.com/mdgriffith/elm-ui), and other projects. I hope you find it useful.
 <p align="center"><img src="https://github.com/chris-montero/terra/blob/master/showcase/whether.png?raw=true" alt="Whether weather app image"></p>
 
-## Build beautiful applications
+## Build gorgeous, high-performance applications
 Terra aims to make developing cross platform applications an experience that is both fast and pleasant, without sacrificing on aesthetics or performance. 
 <p align="center"><img src="https://github.com/chris-montero/terra/blob/master/showcase/mathgraph.png?raw=true" alt="Mathgraph app image"></p>
 
