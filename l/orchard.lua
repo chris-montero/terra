@@ -1,3 +1,4 @@
+-- TODO: move this to terra.internal
 
 local function new()
     -- a mapping of <window_id>s to <terra.window>s

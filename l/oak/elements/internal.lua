@@ -52,21 +52,12 @@ local function element_recursively_process(element, abs_x, abs_y, width, height)
     -- print("recursively processing element:", element)
     element:set_geometry(abs_x, abs_y, width, height)
     -- print(abs_x, abs_y, width, height)
-    -- unveil.dump(element._private.geometry)
 
     -- the element doesn't have a way to relayout its children
     if element.oak_geometrize_children == nil then return end
 
     -- if it does, make it relayout its children
     local geometrized_children = element:oak_geometrize_children(width, height) -- TODO: for performance purposes, dont return a table here.
-
-    -- unveil.dump(geometrized_children, {
-    --     ignore_fields = {
-    --         model = true,
-    --         parent = true,
-    --         root = true,
-    --     }
-    -- })
 
     -- the element has no children
     if geometrized_children == nil then return end
@@ -87,13 +78,6 @@ local function element_recursively_draw_on_context(element, cr)
     local geometry = element.geometry
 
     -- print("IN RECURSIVE DRAW")
-    -- o_i_unveil.dump(element, {
-    --     ignore_fields = {
-    --         model = true,
-    --         parent = true,
-    --         root = true,
-    --     }
-    -- })
 
     local draw_func = element.oak_draw
     -- TODO: I don't think I need `before_draw_children` and 
@@ -120,8 +104,6 @@ local function element_recursively_draw_on_context(element, cr)
 
     if draw_func ~= nil then
         cr:save()
-
-        -- unveil.dump(geometry)
 
         -- print("element_floor: ", element_x_floor, element_y_floor)
         -- go to where the element's geometry says we should draw

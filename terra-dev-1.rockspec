@@ -13,24 +13,13 @@ dependencies = {
     "lua ~> 5.1",
     "lgi ~> 0.9.2-1",
     "tstation ~> dev-1",
+    "lua-ev ~> v1.5-1",
 }
 build = {
     type = "builtin",
     modules = {
         ["terra.orchard"] = "l/orchard.lua",
-
-        -- terra window tools
-        ["terra.window.xcb"] = "l/window/xcb.lua",
-        ["terra.window.internal"] = "l/window/internal.lua",
-
-        -- TODO: can I get rid of these events files?
-        ["terra.events.xcb"] = "l/events/xcb.lua",
-        ["terra.events.common"] = "l/events/common.lua",
-
-        ["terra.app"] = "l/app.lua",
-
         ["terra.sigtools"] = "l/sigtools.lua",
-        ["terra.time"] = "l/time.lua",
         ["terra.object"] = "l/object.lua",
         ["terra.element"] = "l/element.lua",
 
@@ -52,6 +41,8 @@ build = {
         ["terra.oak.internal"] = "l/oak/internal.lua",
 
         -- oak element internals
+        -- TODO: move all l/oak/elements/element.lua to l/oak/elements/internal.lua
+        -- TODO: same with branches and leaves
         ["terra.oak.elements.internal"] = "l/oak/elements/internal.lua",
         ["terra.oak.elements.element"] = "l/oak/elements/element.lua",
 
@@ -61,8 +52,6 @@ build = {
         ["terra.oak.elements.branches.el"] = "l/oak/elements/branches/el.lua",
         ["terra.oak.elements.branches.horizontal"] = "l/oak/elements/branches/horizontal.lua",
         ["terra.oak.elements.branches.vertical"] = "l/oak/elements/branches/vertical.lua",
-        -- ["terra.oak.elements.branches.horizontal"] = "l/oak/elements/branches/horizontal.lua",
-        -- ["terra.oak.elements.branches.vertical"] = "l/oak/elements/branches/vertical.lua",
         ["terra.oak.elements.branches.root"] = "l/oak/elements/branches/root.lua",
 
         -- oak leaves
@@ -77,44 +66,69 @@ build = {
         ["terra.tools.shapers"] = "l/tools/shapers.lua",
         ["terra.tools.color"] = "l/tools/color.lua",
 
-        -- terra internals
-        -- TODO: remove this from the release build
-        ["terra.internal.unveil"] = "l/internal/unveil.lua",
-
-        -- C side terra internals
-        ["terra.internal.scairo"] = {
+        -- platform-independent common code
+        ["terra.platforms.common.window"] = "l/platforms/common/window.lua",
+        ["terra.platform"] = {
             sources = { 
-                "c/src/scairo.c",
+                "c/src/platform.c",
+            },
+            libraries = {
+            },
+            incdirs = {
+                "c/src",
+            },
+        },
+
+        -- xcb platform code
+        ["terra.platforms.xcb.app"] = "l/platforms/xcb/app.lua",
+        ["terra.platforms.xcb.window"] = "l/platforms/xcb/window.lua",
+        ["terra.platforms.xcb.scairo"] = {
+            sources = {
                 "c/src/lhelp.c",
-                "c/src/app.c",
                 "c/src/util.c",
+
+                "c/src/xcb/scairo.c",
+                "c/src/xcb/xlhelp.c",
+                "c/src/xcb/xcb_ctx.c",
+                -- "c/src/util.c",
             },
             libraries = {
                 "xcb",
                 "xcb-keysyms",
                 "cairo",
             },
+            incdirs = {
+                "c/src",
+            },
         },
-        ["terra.internal.spixmap"] = {
-            sources = { 
-                "c/src/spixmap.c",
+        ["terra.platforms.xcb.spixmap"] = {
+            sources = {
                 "c/src/lhelp.c",
-                "c/src/app.c",
                 "c/src/util.c",
+
+                "c/src/xcb/spixmap.c",
+                "c/src/xcb/xlhelp.c",
+                "c/src/xcb/xcb_ctx.c",
             },
             libraries = {
                 "xcb",
                 "xcb-keysyms",
                 "X11",
             },
+            incdirs = {
+                "c/src",
+            },
         },
-        ["terra.internal.swin"] = {
-            sources = { 
-                "c/src/util.c",
-                "c/src/app.c",
-                "c/src/swin.c",
+        ["terra.platforms.xcb.swin"] = {
+            sources = {
                 "c/src/lhelp.c",
-                "c/src/windows/xcb.c"
+                "c/src/util.c",
+
+                "c/src/xcb/swin.c",
+                -- "c/src/xcb/util.c",
+                "c/src/xcb/xcb_ctx.c",
+                "c/src/xcb/xlhelp.c",
+                "c/src/xcb/window.c"
             },
             libraries = {
                 "xcb",
@@ -126,18 +140,21 @@ build = {
                 "c/src",
             },
         },
-        ["terra.internal.application"] = {
+        ["terra.platforms.xcb.ctx"] = {
             -- defines = {
             --     "DEBUG=1",
             -- },
-            sources = { 
-                "c/src/application.c",
-                "c/src/app.c",
+            sources = {
                 "c/src/lhelp.c",
-                "c/src/terra_xkb.c",
-                "c/src/event.c",
                 "c/src/util.c",
-                "c/src/xdraw.c",
+
+                "c/src/xcb/context.c",
+                "c/src/xcb/xcb_ctx.c",
+                "c/src/xcb/xlhelp.c",
+                "c/src/xcb/terra_xkb.c",
+                "c/src/xcb/event.c",
+                "c/src/xcb/xutil.c",
+                "c/src/xcb/vidata.c",
             },
             libraries = {
                 "luajit-5.1",
@@ -146,7 +163,6 @@ build = {
                 "xcb-cursor",
                 "xcb-errors",
                 "cairo",
-                "ev",
                 "xkbcommon",
                 "xkbcommon-x11",
             },

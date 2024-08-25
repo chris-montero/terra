@@ -1,22 +1,25 @@
 
-#include <cairo/cairo-xcb.h>
-
 #include <lua.h>
 #include <lauxlib.h>
 
+#include <cairo/cairo-xcb.h>
+
 #include "lhelp.h"
+
+#include "xcb/xlhelp.h"
+#include "xcb/context.h"
 
 int luaH_scairo_surface_create_from_pixmap(lua_State *L)
 {
-    struct Application *ap = lhelp_check_app(L, 1);
-    xcb_pixmap_t pixmap_id = (xcb_pixmap_t)lhelp_check_id(L, 2);
+    struct XcbContext *xc = xlhelp_check_xcb_ctx(L, 1);
+    xcb_pixmap_t pixmap_id = (xcb_pixmap_t)xlhelp_check_id(L, 2);
     u16 width = luaL_checkinteger(L, 3);
     u16 height = luaL_checkinteger(L, 4);
 
     cairo_surface_t *cairo_surface = cairo_xcb_surface_create(
-        ap->connection,
+        xc->connection,
         pixmap_id,
-        ap->visual,
+        xc->visual,
         width,
         height
     );
@@ -29,7 +32,7 @@ int luaH_scairo_surface_create_from_pixmap(lua_State *L)
 int luaH_scairo_surface_set_pixmap(lua_State *L)
 {
     cairo_surface_t *cairo_surface = (cairo_surface_t *) lua_tointeger(L, 1);
-    xcb_pixmap_t pixmap_id = (xcb_pixmap_t)lhelp_check_id(L, 2);
+    xcb_pixmap_t pixmap_id = (xcb_pixmap_t)xlhelp_check_id(L, 2);
     u16 width = luaL_checkinteger(L, 3);
     u16 height = luaL_checkinteger(L, 4);
 
@@ -53,7 +56,7 @@ static const struct luaL_Reg lib_scairo[] = {
     { NULL, NULL }
 };
 
-int luaopen_terra_internal_scairo(lua_State *L)
+int luaopen_terra_platforms_xcb_scairo(lua_State *L)
 {
     luaL_newlib(L, lib_scairo);
     return 1;

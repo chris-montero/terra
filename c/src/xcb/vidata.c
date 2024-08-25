@@ -5,10 +5,10 @@
 #include <xcb/xcb.h>
 
 #include "sane.h"
-#include "xdraw.h"
 
+#include "xcb/vidata.h"
 
-struct VisualData xdraw_visual_data_find_argb(const xcb_screen_t *s)
+struct VisualData vidata_find_argb(const xcb_screen_t *s)
 {
     struct VisualData vdata;
     vdata.visual = NULL; // used to check for failure
@@ -55,7 +55,7 @@ struct VisualData xdraw_visual_data_find_argb(const xcb_screen_t *s)
     return vdata;
 }
 
-struct VisualData xdraw_visual_data_find_default(const xcb_screen_t *s)
+struct VisualData vidata_find_default(const xcb_screen_t *s)
 {
     struct VisualData vdata;
     vdata.visual = NULL; // used to check for failure
@@ -91,7 +91,16 @@ struct VisualData xdraw_visual_data_find_default(const xcb_screen_t *s)
     return vdata;
 }
 
-// u8 xdraw_find_visual_depth(const xcb_screen_t *s, xcb_visualid_t vid)
+bool vidata_is_invalid(struct VisualData vidata)
+{
+    if (vidata.visual == NULL) {
+        return TRUE;
+    } else {
+        return FALSE;
+    }
+}
+
+// u8 vidata_find_visual_depth(const xcb_screen_t *s, xcb_visualid_t vid)
 // {
 //     xcb_depth_iterator_t depth_iter = xcb_screen_allowed_depths_iterator(s);
 //

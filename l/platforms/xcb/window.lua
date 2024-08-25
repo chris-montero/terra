@@ -2,19 +2,17 @@
 local lgi = require("lgi")
 local tstation = require("tstation")
 
-local t_i_spixmap = require("terra.internal.spixmap")
-local t_i_scairo = require("terra.internal.scairo")
-local t_i_swin = require("terra.internal.swin")
-local t_i_unveil = require("terra.internal.unveil")
-
-local t_time = require("terra.time")
 local t_sigtools = require("terra.sigtools")
 local t_orchard = require("terra.orchard")
 local t_element = require("terra.element")
 
 local tt_table = require("terra.tools.table")
 
-local tw_internal = require("terra.window.internal")
+local tpx_spixmap = require("terra.platforms.xcb.spixmap")
+local tpx_scairo = require("terra.platforms.xcb.scairo")
+local tpx_swin = require("terra.platforms.xcb.swin")
+
+local tpc_window = require("terra.platforms.common.window")
 
 local events = {
     WindowFocusEvent = "WindowFocusEvent",
@@ -32,8 +30,8 @@ local function _window_drawing_context_destroy(window)
     -- first, destroy what needs to be destroyed.
     -- TODO: can I use cairo_surface_create_similar for better performance?
     window.lgi_cairo_surf:finish()
-    t_i_spixmap.destroy(window.scope.app.terra_data, window.pixmap_id)
-    t_i_scairo.destroy(window.cairo_surf_ptr) -- we don't need 'window.scope.app.terra_data' for this
+    tpx_spixmap.destroy(window.scope.app.xcb_ctx, window.pixmap_id)
+    tpx_scairo.destroy(window.cairo_surf_ptr) -- we don't need 'window.scope.app.xcb_ctx' for this
 
     -- then unset them, and the gc should take care of the rest.
     window.pixmap_id = nil
@@ -43,11 +41,11 @@ local function _window_drawing_context_destroy(window)
 end
 
 local function _window_drawing_context_setup(window, width, height)
-    local terra_data = window.scope.app.terra_data
+    local xcb_ctx = window.scope.app.xcb_ctx
 
     -- create all the stuff
-    local pixmap_id = t_i_spixmap.create(terra_data, width, height)
-    local cairo_surf_ptr = t_i_scairo.create_from_pixmap(terra_data, pixmap_id, width, height)
+    local pixmap_id = tpx_spixmap.create(xcb_ctx, width, height)
+    local cairo_surf_ptr = tpx_scairo.create_from_pixmap(xcb_ctx, pixmap_id, width, height)
     local lgi_cairo_surf = lgi.cairo.Surface(cairo_surf_ptr, true)
     local cr = lgi.cairo.Context(lgi_cairo_surf)
 
@@ -59,20 +57,21 @@ local function _window_drawing_context_setup(window, width, height)
 end
 
 local function _window_drawing_context_update(window, width, height)
-    local terra_data = window.scope.app.terra_data
-    t_i_spixmap.destroy(terra_data, window.pixmap_id)
-    window.pixmap_id = t_i_spixmap.create(terra_data, width, height)
-    t_i_scairo.set_pixmap(window.cairo_surf_ptr, window.pixmap_id, width, height)
+    local xcb_ctx = window.scope.app.xcb_ctx
+    tpx_spixmap.destroy(xcb_ctx, window.pixmap_id)
+    window.pixmap_id = tpx_spixmap.create(xcb_ctx, width, height)
+    tpx_scairo.set_pixmap(window.cairo_surf_ptr, window.pixmap_id, width, height)
 end
 
 -- returns true if the window drew anything, false otherwise
 local function draw(window)
+    window:reset_frame_timer()
 
     local tree = window.tree
     if tree == nil then return false end
 
     -- if the window is not visible, don't draw.
-    if window.visibility ~= tw_internal.visibility.RAISED_AND_SHOWING then 
+    if window.visibility ~= tpc_window.visibility.RAISED_AND_SHOWING then 
         print("NO NEED TO DRAW BECAUSE NOT SHOWING")
         return false
     end
@@ -99,11 +98,13 @@ local function draw(window)
     local something_was_drawn = tree:draw(window.cr, window_geom.width, window_geom.height)
     if something_was_drawn == false then 
         return false
+    -- else
+    --     print("drawn")
     end
 
     -- finally, copy the drawing from the pixmap to the window
-    t_i_spixmap.draw_portion_to_window(
-        window.scope.app.terra_data,
+    tpx_spixmap.draw_portion_to_window(
+        window.scope.app.xcb_ctx,
         window.pixmap_id,
         window.window_id,
         -- TODO: since we never need to draw to other coordinates, it 
@@ -130,14 +131,9 @@ local function handle_configure_notify_event(window, x, y, width, height)
     window.width = width
     window.height = height
 
-    -- TODO: make it so that in a list of configure notify events, only the 
-    -- last one is processed. (from the C side)
-
-    -- NOTE: the contained tree, if any, will be notified of the change in 
-    -- the `draw` function
-    if window.max_fps == nil then
-        window:draw() -- if no fps limit, draw immediately
-    end
+    -- after the window was resized, draw the window again instantly. 
+    -- This will also reset the timer.
+    window:draw()
 end
 
 local function handle_mouse_click_event(window, is_press, button, modifiers, x, y)
@@ -149,9 +145,9 @@ local function handle_mouse_click_event(window, is_press, button, modifiers, x, 
         tree:handle_mouse_click_event(is_press, button, modifiers, x, y)
     end
 
-    if window.max_fps == nil then
-        window:draw()
-    end
+    -- if window.max_fps == nil then
+    --     window:draw()
+    -- end
 end
 
 local function handle_create_event(window) -- TODO: maybe add proper support for X windows
@@ -160,11 +156,10 @@ local function handle_create_event(window) -- TODO: maybe add proper support for
 end
 
 local function handle_destroy_event(window) -- TODO: maybe add proper support for X windows
-    -- TODO: maybe rename this ".parent_app"
     local app = window.scope.app
 
     -- teardown signals
-    tw_internal.teardown_signals(window, app)
+    tpc_window.teardown_signals(window, app)
 
     -- stop tracking this window
     t_orchard.remove_window_by_id(app.orchard, window.window_id)
@@ -187,9 +182,9 @@ local function handle_mouse_enter_event(window, button, modifiers, x, y)
         tree:handle_mouse_enter_event(button, modifiers, x, y)
     end
 
-    if window.max_fps == nil then
-        window:draw()
-    end
+    -- if window.max_fps == nil then
+    --     window:draw()
+    -- end
 end
 
 local function handle_expose_event(window, x, y, width, height, count)
@@ -219,9 +214,9 @@ local function handle_mouse_leave_event(window, button, modifiers, x, y)
         tree:handle_mouse_leave_event(button, modifiers, x, y)
     end
 
-    if window.max_fps == nil then
-        window:draw()
-    end
+    -- if window.max_fps == nil then
+    --     window:draw()
+    -- end
 end
 
 local function handle_mouse_motion_event(window, modifiers, x, y)
@@ -234,13 +229,13 @@ local function handle_mouse_motion_event(window, modifiers, x, y)
         tree:handle_mouse_motion_event(modifiers, x, y)
     end
 
-    if window.max_fps == nil then
-        window:draw()
-    end
+    -- if window.max_fps == nil then
+    --     window:draw()
+    -- end
 end
 
 local function handle_map_event(window)
-    window.visibility = tw_internal.visibility.RAISED
+    window.visibility = tpc_window.visibility.RAISED
     -- local tree = window.tree
     -- if tree == nil then return end
 end
@@ -259,17 +254,17 @@ local function handle_reparent_event(window, event_window_id, parent_id, window_
 end
 
 local function handle_visibility_event(window, visibility)
-    window.visibility = tw_internal.visibility.RAISED_AND_SHOWING
+    window.visibility = tpc_window.visibility.RAISED_AND_SHOWING
 
-    tstation.emit(window.station, "WindowBecameVisible")
+    tstation.emit(window.station, "WindowBecameVisible") -- TODO: dont use string directly here
 
     -- always draw when the window becomes visible. Otherwise it will just be blank.
     window:draw()
 end
 
 local function handle_unmap_event(window)
-    window.visibility = tw_internal.visibility.HIDDEN
-    tstation.emit(window.station, "WindowBecameInvisible")
+    window.visibility = tpc_window.visibility.HIDDEN
+    tstation.emit(window.station, "WindowBecameInvisible") -- TODO: dont use string directly here
 end
 
 local function handle_frame_event(window, time)
@@ -282,6 +277,9 @@ end
 -- would actually change the window width. The user should use 
 -- `request_geometry_change` for that.
 local function create(app, x, y, width, height, args)
+
+    -- TODO: set this properly with x11 properties
+    -- local title = args.title 
 
     local xcb_window_defaults = {
         -- by default xcb windows should have titlebars
@@ -308,15 +306,15 @@ local function create(app, x, y, width, height, args)
         handle_unmap_event = handle_unmap_event,
         handle_frame_event = handle_frame_event,
     }
-    local window = tw_internal.common_new(
-        app, 
+    local window = tpc_window.common_new(
+        app,
         x, y, width, height,
         tt_table.crush(xcb_window_defaults, args)
     )
 
     -- then, create a window
-    window.window_id = t_i_swin.create(
-        app.terra_data,
+    window.window_id = tpx_swin.create(
+        app.xcb_ctx,
         x,
         y,
         width,
@@ -336,8 +334,9 @@ end
 
 -- TODO: there should be a way for the user to know if his request was granted/denied
 local function request_raise(window)
-    t_i_swin.map_request(window.scope.app.terra_data, window.window_id)
+    tpx_swin.map_request(window.scope.app.xcb_ctx, window.window_id)
 end
+
 local function request_geometry_change(window, x, y, width, height)
     local window_geom = window:get_geometry()
     if window_geom.x == x 
@@ -348,16 +347,16 @@ local function request_geometry_change(window, x, y, width, height)
         return 
     end
 
-    t_i_swin.set_geometry_request(window.window_id, x, y, width, height)
+    tpx_swin.set_geometry_request(window.window_id, x, y, width, height)
 end
 
 local function hide(window)
-    t_i_swin.unmap(window.scope.app.terra_data, window.window_id)
+    tpx_swin.unmap(window.scope.app.xcb_ctx, window.window_id)
 end
 
 local function destroy(window)
     _window_drawing_context_destroy(window)
-    t_i_swin.destroy(window.window_id)
+    tpx_swin.destroy(window.window_id)
 end
 
 return {
@@ -368,7 +367,7 @@ return {
     request_raise = request_raise,
     request_geometry_change = request_geometry_change,
 
-    set_tree = tw_internal.set_tree,
+    set_tree = tpc_window.set_tree,
     draw = draw,
 
     handle_configure_notify_event = handle_configure_notify_event,

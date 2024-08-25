@@ -1,7 +1,6 @@
 
+local lev = require("ev")
 local tstation = require("tstation")
-
-local t_i_unveil = require("terra.internal.unveil")
 
 local t_object = require("terra.object")
 local t_sigtools = require("terra.sigtools")
@@ -37,23 +36,29 @@ local function set_tree(window, new_tree)
             window.tree = tree
         end
     end
+end
 
-    -- if tree == nil then
-    --     if window.tree == nil then
-    --         return
-    --     else
-    --         window.tree = nil
-    --         tree:handle_detach_from_window(window, window.scope.app)
-    --     end
-    -- else
-    --     if window.tree ~= nil then
-    --         tree:handle_detach_from_window(window, window.scope.app)
-    --     end
-    --
-    --     window.tree = tree 
-    --     -- finally, let the tree know it was attached to a window
-    --     tree:handle_attach_to_window(window, window.scope.app)
-    -- end
+local function set_max_fps(window, fps)
+    if fps < 0 then fps = 0 end
+    if fps == nil then fps = 300 end -- TODO: add support for unlimited fps
+
+    if fps == window.max_fps then return end
+    window.max_fps = fps
+
+    if fps == 0 then
+        window._draw_every = 0
+        window.frame_timer:stop(window.scope.app.event_loop)
+    else
+        window._draw_every = 1/fps
+
+        -- draw it instantly after setting the fps. the draw function 
+        -- should take care to reset the timer properly.
+        window:draw()
+    end
+end
+
+local function reset_frame_timer(window)
+    window.frame_timer:again(window.scope.app.event_loop, window._draw_every)
 end
 
 local function setup_signals(window, parent_app)
@@ -77,17 +82,16 @@ end
 
 local function window_common_new(app, x, y, width, height, args)
 
-    -- local title = args.title -- TODO: set this properly with x11 properties
-
+    -- TODO: document supported fields
     local window_defaults = {
-
         -- model = model -- NOTE: the user provides a model if he wants
 
         -- tree = nil, -- to be set by the user
 
-        -- for now, by default, all windows have a max_fps of 144. TODO: make 
-        -- it so that each window can set its own fps.
+        -- TODO: check which screen this window is on, and try to get the 
+        -- refresh rate and use that by default
         max_fps = 144,
+        _draw_every = nil,
 
         -- signal handling
         subscribe_on_self = {},
@@ -97,14 +101,33 @@ local function window_common_new(app, x, y, width, height, args)
             app = app,
         },
 
+        set_max_fps = set_max_fps,
+        reset_frame_timer = reset_frame_timer,
+
         -- by default, all windows are "hidden"
         visibility = visibility.HIDDEN,
     }
-
-    -- TODO: document supported fields
     local window = tt_table.crush(t_element.new(), window_defaults, args)
-
     check_valid(window.scope.app, x, y, width, height)
+
+    -- set the timer callback
+    window._timer_cb = function(loop, timer, revents)
+        window:draw()
+    end
+
+    -- create the frame timer
+    if window.max_fps == 0 then
+        window._draw_every = 0
+        -- "after" and "repeat" do not matter here because the timer is not 
+        -- started anyway. when the timer will be started, these values will 
+        -- be set properly then.
+        window.frame_timer = lev.Timer.new(window._timer_cb, 0.1, 0.1) 
+    else
+        window._draw_every = 1/window.max_fps
+        window.frame_timer = lev.Timer.new(window._timer_cb, window._draw_every, window._draw_every)
+        -- window.frame_timer:start(app.event_loop, true) -- TODO: try with daemon=true
+        window.frame_timer:start(app.event_loop) -- TODO: try with daemon=true
+    end
 
     -- the scope should contain a reference to self
     window.scope.self = window
@@ -134,4 +157,6 @@ return {
     setup_signals = setup_signals,
     teardown_signals = teardown_signals,
 
+    set_max_fps = set_max_fps,
+    reset_frame_timer = reset_frame_timer,
 }

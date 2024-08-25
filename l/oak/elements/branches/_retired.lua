@@ -30,7 +30,6 @@
 --     print('redraw elements that need clipping before relayout:')
 --     for _, element in ipairs(elements_to_redraw) do
 --         -- TODO: check for oak_geometry == nil
---         -- t_i_unveil.dump(element.oak_geometry)
 --         print("element to redraw", element)
 --         local elem_geom = element:get_geometry()
 --         if elem_geom.x ~= nil then
@@ -63,7 +62,6 @@
 --
 --         print('redraw elements that need clipping after relayout:')
 --         for _, element in ipairs(elements_to_redraw) do
---             t_i_unveil.dump(element.geometry)
 --             dirty_region:union_rectangle(
 --                 lgi.cairo.RectangleInt(
 --                     toe_internal.geometry_to_clip_area(element.geometry)

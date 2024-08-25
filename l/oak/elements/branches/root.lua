@@ -5,9 +5,6 @@ local tstation = require("tstation")
 local tt_table = require("terra.tools.table")
 local tt_tracker = require("terra.tools.tracker")
 
-local t_i_unveil = require("terra.internal.unveil")
-local t_i_application = require("terra.internal.application")
-
 local t_sigtools = require("terra.sigtools")
 
 local t_element = require("terra.element")
@@ -292,7 +289,7 @@ end
 local function draw(root, cr, window_width, window_height)
 
     -- send out an AnimationEvent signal, if anybody wants to do something
-    tstation.emit(root.station, "AnimationEvent", t_i_application.now())
+    tstation.emit(root.station, "AnimationEvent", root.scope.window.time) -- TODO: maybe standardize this somehow?
 
     local root_geom = root:get_geometry()
     if root_geom.width ~= window_width or root_geom.height ~= window_height then
