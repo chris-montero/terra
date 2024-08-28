@@ -72,7 +72,7 @@ local function draw(window)
 
     -- if the window is not visible, don't draw.
     if window.visibility ~= tpc_window.visibility.RAISED_AND_SHOWING then 
-        print("NO NEED TO DRAW BECAUSE NOT SHOWING")
+        -- print("NO NEED TO DRAW BECAUSE NOT SHOWING")
         return false
     end
 

@@ -25,6 +25,13 @@ int luaH_scairo_surface_create_from_pixmap(lua_State *L)
     );
 
     // push the pointer directly as a lua number. TODO: is this safe?
+    // Also: http://lua-users.org/wiki/LightUserData says 
+    // "Light userdata are intended to store C pointers in Lua (note: 
+    // Lua numbers may or may not be suitable for this purpose depending 
+    // on the data types on the platform)."
+    // My problem was that I couldn't give lgi a lightuserdata and have
+    // it understand it was a pointer, but it worked if I just gave it
+    // a number, hence the use of an integer here.
     lua_pushinteger(L, (u64)cairo_surface);
     return 1;
 }

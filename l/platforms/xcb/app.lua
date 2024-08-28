@@ -200,7 +200,7 @@ local function watch_io(app, fd, fun)
     -- The way to stop an io watcher created with this function is by 
     -- calling a ":stop(loop)" method on the return value. I dislike 
     -- APIs like this. TODO: Maybe fork lua-ev and write my own api.
-    local watcher = lev.IO.new(fun, fd, ev.READ)
+    local watcher = lev.IO.new(fun, fd, ev.READ) -- TODO: use bitlib
     watcher:start(app.event_loop)
     return watcher
 end
@@ -236,12 +236,11 @@ end
 
 
 return {
+    -- supported events names
     events = events,
 
     default_event_handler_map = default_event_handler_map,
-    make_default_event_handler = make_default_event_handler,
-    desktop = desktop,
-
+    -- app default xcb handlers
     handle_mouse_click_event = handle_mouse_click_event,
     handle_configure_notify_event = handle_configure_notify_event,
     handle_create_event = handle_create_event,
@@ -260,6 +259,13 @@ return {
     handle_visibility_event = handle_visibility_event,
     handle_unmap_event = handle_unmap_event,
 
+    make_default_event_handler = make_default_event_handler,
+
+    -- create and run the app
+    desktop = desktop,
+
+    -- app tools
+    watch_io = watch_io,
 
     -- TODO: see if I can get rid of these things
     -- sync = t_i_application.sync,
