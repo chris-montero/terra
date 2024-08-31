@@ -1,5 +1,5 @@
 
-local lev = require("ev")
+local luv = require("luv")
 
 local t_platform = require("terra.platform")
 local t_object = require("terra.object")
@@ -136,17 +136,6 @@ local default_event_handler_map = {
     [events.X_UnmapNotify] = handle_unmap_event,
 }
 
--- local function make_default_event_handler(user_event_handler)
---     return function(terra_data, app, event_type, ...) 
---         local cb = default_event_handler_map[event_type]
---         if cb == nil then 
---             return user_event_handler(app, event_type, ...)
---         else
---             return cb(app, event_type, ...)
---         end
---     end
--- end
-
 local function make_default_event_handler(user_event_handler)
     return function(app, event_type, ...)
         local cb = default_event_handler_map[event_type]
@@ -171,44 +160,39 @@ local function desktop(init_func, event_handler)
         return event_handler(app, ...)
     end)
 
-    -- create the event loop
-    app.event_loop = lev.Loop.default
-
     -- create the X11 file descriptor watcher
-    app.xcb_watcher = lev.IO.new(function(loop, io, revents)
-        -- TODO: should I provide the event handler function for each 
-        -- event here?
-        tpx_ctx.handle_events() 
-    end, tpx_ctx.get_file_descriptor(app.xcb_ctx), lev.READ)
-    app.xcb_watcher:start(app.event_loop)
+    app.xcb_watcher = luv.new_poll(tpx_ctx.get_file_descriptor(app.xcb_ctx))
+    luv.poll_start(app.xcb_watcher, "r", function(err, events)
+        tpx_ctx.handle_events()
+    end)
 
     -- let the user initialize his data
     init_func(app)
 
     -- start the event loop
-    app.event_loop:loop()
+    luv.run()
 
     -- this only runs after the event loop is stopped.
     -- normally, when the application is done.
     tpx_ctx.destroy()
 end
 
--- function that allows the user to listen to events on a user-supplied 
--- file descriptor.
--- @fun: (loop, watcher, revents) -> nil
-local function watch_io(app, fd, fun)
-    -- The way to stop an io watcher created with this function is by 
-    -- calling a ":stop(loop)" method on the return value. I dislike 
-    -- APIs like this. TODO: Maybe fork lua-ev and write my own api.
-    local watcher = lev.IO.new(fun, fd, ev.READ) -- TODO: use bitlib
-    watcher:start(app.event_loop)
-    return watcher
-end
+-- -- function that allows the user to listen to events on a user-supplied 
+-- -- file descriptor.
+-- -- @fun: (loop, watcher, revents) -> nil
+-- local function watch_io(app, fd, fun)
+--     -- The way to stop an io watcher created with this function is by 
+--     -- calling a ":stop(loop)" method on the return value. I dislike 
+--     -- APIs like this. TODO: Maybe fork lua-ev and write my own api.
+--     local watcher = lev.IO.new(fun, fd, ev.READ) -- TODO: use bitlib
+--     watcher:start(app.event_loop)
+--     return watcher
+-- end
 
--- TODO: implement this. This function lets the user simulate an event 
--- directly onto the event loop and have it handled as a regular event.
-local function event(app, name, ...)
-end
+-- -- TODO: implement this. This function lets the user simulate an event 
+-- -- directly onto the event loop and have it handled as a regular event.
+-- local function event(app, name, ...)
+-- end
 
 -- local function desktop(init_func, event_handler)
 --     t_i_application.desktop(
@@ -264,8 +248,8 @@ return {
     -- create and run the app
     desktop = desktop,
 
-    -- app tools
-    watch_io = watch_io,
+    -- -- app tools
+    -- watch_io = watch_io,
 
     -- TODO: see if I can get rid of these things
     -- sync = t_i_application.sync,

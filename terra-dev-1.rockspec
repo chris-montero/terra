@@ -13,7 +13,7 @@ dependencies = {
     "lua ~> 5.1",
     "lgi ~> 0.9.2-1",
     "tstation ~> dev-1",
-    "lua-ev ~> v1.5-1",
+    "luv",
 }
 build = {
     type = "builtin",

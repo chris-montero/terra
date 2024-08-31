@@ -1,5 +1,5 @@
 
-local lev = require("ev")
+local luv = require("luv")
 local tstation = require("tstation")
 
 local t_object = require("terra.object")
@@ -47,9 +47,10 @@ local function set_max_fps(window, fps)
 
     if fps == 0 then
         window._draw_every = 0
-        window.frame_timer:stop(window.scope.app.event_loop)
+        luv.timer_stop(window.frame_timer)
     else
         window._draw_every = 1/fps
+        luv.timer_set_repeat(window.frame_timer, window._draw_every * 1000)
 
         -- draw it instantly after setting the fps. the draw function 
         -- should take care to reset the timer properly.
@@ -58,7 +59,7 @@ local function set_max_fps(window, fps)
 end
 
 local function reset_frame_timer(window)
-    window.frame_timer:again(window.scope.app.event_loop, window._draw_every)
+    luv.timer_again(window.frame_timer)
 end
 
 local function setup_signals(window, parent_app)
@@ -111,22 +112,23 @@ local function window_common_new(app, x, y, width, height, args)
     check_valid(window.scope.app, x, y, width, height)
 
     -- set the timer callback
-    window._timer_cb = function(loop, timer, revents)
+    window._timer_cb = function()
         window:draw()
     end
 
     -- create the frame timer
+    window.frame_timer = luv.new_timer()
     if window.max_fps == 0 then
         window._draw_every = 0
-        -- "after" and "repeat" do not matter here because the timer is not 
-        -- started anyway. when the timer will be started, these values will 
-        -- be set properly then.
-        window.frame_timer = lev.Timer.new(window._timer_cb, 0.1, 0.1) 
     else
         window._draw_every = 1/window.max_fps
-        window.frame_timer = lev.Timer.new(window._timer_cb, window._draw_every, window._draw_every)
-        -- window.frame_timer:start(app.event_loop, true) -- TODO: try with daemon=true
-        window.frame_timer:start(app.event_loop) -- TODO: try with daemon=true
+        -- window.frame_timer = lev.Timer.new(window._timer_cb, window._draw_every, window._draw_every)
+        luv.timer_start(
+            window.frame_timer, 
+            0, 
+            window._draw_every * 1000, -- miliseconds
+            window._timer_cb
+        )
     end
 
     -- the scope should contain a reference to self
