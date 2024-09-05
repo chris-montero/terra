@@ -91,7 +91,7 @@ The above code produces the following output (without the titlebar):
 
 ## Installing
 1. Clone the repo  
-`git clone https://github.com/chris-montero/terra`
+`git clone https://github.com/chris-montero/terra.git`
 2. Build the project and install the luarock  
 `sudo luarocks make`
 3. That's it. Now you should be able to successfully run the code in the [Example](#Example) section.
