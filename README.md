@@ -1,6 +1,3 @@
-# ATTENTION
-Terra is currently unmaintained. I reached the end of my finances, so I need a job.
-
 # Terra
 *What if you didn't have to write electron apps anymore?*
 
@@ -13,7 +10,8 @@ Terra aims to make developing cross platform applications an experience that is 
 <p align="center"><img src="https://github.com/chris-montero/terra/blob/master/showcase/mathgraph.png?raw=true" alt="Mathgraph app image"></p>
 
 ## Current state
-**Warning: Terra is still very early in development. We push to the main branch and live life day to day.**  
+**Warning: Terra is experimental software and very early in development. We push to the main branch and live life day to day. :)**  
+Also, I'm working on this whenever I have time and whenever I feel like it. I may be slow to solve issues.
 Terra currently only works with luajit on linux under Xorg. Support for Wayland, Windows and Mac is planned.  
 If you experience any issues with installing, bugs, etc., you can open an issue or contact me directly.
 
