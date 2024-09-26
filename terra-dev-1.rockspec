@@ -23,6 +23,26 @@ build = {
         ["terra.object"] = "l/object.lua",
         ["terra.element"] = "l/element.lua",
 
+        -- luv abstraction
+        -- TODO: should I go this route?
+        -- ["terra.suv.tcp"] = "l/suv/tcp.lua",
+        -- ["terra.suv.internal.util"] = "l/suv/internal/util.lua",
+        -- ["terra.suv.internal.stream"] = "l/suv/internal/stream.lua",
+        -- ["terra.suv.internal.handle"] = "l/suv/internal/handle.lua",
+
+        -- EXPERIMENTAL: try to use plenary's async abstraction
+        -- ["terra.async.uv_async"] = "l/async/uv_async.lua",
+        -- ["terra.async.async"] = "l/async/async.lua",
+        -- ["terra.async.rotate"] = "l/async/rotate.lua",
+
+        -- EXPERIMENTAL: an api that just does what people actually want 
+        -- to do with tcp connections: listen for connections as a server, 
+        -- or listen for data as a client.
+        ["terra.abonaments.tcp.client"] = "l/abonaments/tcp/client.lua",
+
+        ["terra.promise"] = "l/promise.lua",
+        ["terra.puv"] = "l/puv.lua",
+
         -- terra input
         ["terra.input.click"] = "l/input/click.lua",
         ["terra.input.clickmap"] = "l/input/clickmap.lua",
@@ -65,6 +85,7 @@ build = {
         ["terra.tools.tracker"] = "l/tools/tracker.lua",
         ["terra.tools.shapers"] = "l/tools/shapers.lua",
         ["terra.tools.color"] = "l/tools/color.lua",
+        ["terra.tools.enum"] = "l/tools/enum.lua",
 
         -- platform-independent common code
         ["terra.platforms.common.window"] = "l/platforms/common/window.lua",

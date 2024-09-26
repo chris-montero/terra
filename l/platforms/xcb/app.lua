@@ -152,6 +152,9 @@ local function desktop(init_func, event_handler)
         -- we use a <terra.orchard> to keep track of all of the windows
         orchard = t_orchard.new(),
         -- user can set a ".model" field if he wants
+
+        -- a "host/port" : <uv_tcp_t> mapping
+        _tcp_conns = {},
     })
 
     -- the xcb_ctx is a bunch of stuff from the C side that we need in
