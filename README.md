@@ -1,3 +1,6 @@
+# ATTENTION
+Terra is currently unmaintained. I reached the end of my finances, so I need a job.
+
 # Terra
 *What if you didn't have to write electron apps anymore?*
 
