@@ -7,7 +7,7 @@ description = {
     homepage = "http://github.com/chris-montero/terra",
     summary = "What if you didn't have to write Electron apps anymore?",
     detailed = "A sane, desktop-native, application development framework.",
-    license = "GNU GPL v2",
+    license = "MIT",
 }
 dependencies = {
     "lua ~> 5.1",
@@ -36,11 +36,11 @@ build = {
         -- ["terra.async.rotate"] = "l/async/rotate.lua",
 
         -- EXPERIMENTAL: an api that just does what people actually want 
-        -- to do with tcp connections: listen for connections as a server, 
-        -- or listen for data as a client.
+        -- to do with tcp connections: 
+        --      * as a server: write data and listen for and accept connections.
+        --      * as a client: write data to a host and port, and listen for data.
         ["terra.abonaments.tcp.client"] = "l/abonaments/tcp/client.lua",
 
-        ["terra.promise"] = "l/promise.lua",
         ["terra.puv"] = "l/puv.lua",
 
         -- terra input
@@ -86,6 +86,9 @@ build = {
         ["terra.tools.shapers"] = "l/tools/shapers.lua",
         ["terra.tools.color"] = "l/tools/color.lua",
         ["terra.tools.enum"] = "l/tools/enum.lua",
+        ["terra.tools.urn"] = "l/tools/urn.lua",
+        ["terra.tools.promise"] = "l/tools/promise.lua",
+        ["terra.tools.sstr"] = "l/tools/sstr.lua",
 
         -- platform-independent common code
         ["terra.platforms.common.window"] = "l/platforms/common/window.lua",

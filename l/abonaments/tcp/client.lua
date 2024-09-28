@@ -2,7 +2,7 @@
 local luv = require("luv")
 local tstation = require("tstation")
 
-local t_promise = require("terra.promise")
+local tt_promise = require("terra.tools.promise")
 local t_puv = require("terra.puv")
 
 local function _make_id(host, port)
@@ -20,7 +20,7 @@ local function _ensure_connection(app, host, port)
                 return t_puv.tcp_connect(tcp, host, port)
             end)
     else
-        local p = t_promise.new()
+        local p = tt_promise.new()
         p:resolve(conn)
         return p
     end
