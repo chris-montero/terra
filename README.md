@@ -1,3 +1,6 @@
+## IMPORTANT
+This project is currently unmaintained.
+
 # Terra
 *What if you didn't have to write electron apps anymore?*
 
